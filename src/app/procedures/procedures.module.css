@@ -1,0 +1,118 @@
+.proceduresContainer {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+  }
+  
+  .proceduresLayout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .mainContent {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .comingSoon {
+    text-align: center;
+    max-width: 32rem;
+    padding: 2rem;
+  }
+  
+  .icon {
+    width: 5rem;
+    height: 5rem;
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+  }
+  
+  .icon svg {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: white;
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+  
+  .description {
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  
+  .procedures {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    text-align: left;
+    margin-bottom: 2rem;
+  }
+  
+  @media (min-width: 640px) {
+    .procedures {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  .procedureCard {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+  
+  .procedureCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  
+  .procedureIcon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .procedureTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .procedureDescription {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  
+  .notifyButton {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .notifyButton:hover {
+    background: linear-gradient(135deg, #0e7490 0%, #0f766e 100%);
+    transform: translateY(-1px);
+  }

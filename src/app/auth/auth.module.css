@@ -1,0 +1,426 @@
+.authContainer {
+    min-height: 100vh;
+    display: flex;
+  }
+  
+  .authForm {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background);
+    padding: 3rem 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .authForm {
+      padding: 3rem 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .authForm {
+      padding: 3rem 5rem;
+    }
+  }
+  
+  .formWrapper {
+    max-width: 28rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .logoSection {
+    text-align: center;
+  }
+  
+  .logoIcon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+  
+  .logoIcon span {
+    color: white;
+    font-weight: bold;
+    font-size: 1.125rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .subtitle {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  .socialButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .socialButton {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    background: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+  
+  .socialButton:hover {
+    background-color: var(--background);
+  }
+  
+  .socialButton svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.75rem;
+  }
+  
+  .divider {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .inputGroup {
+    position: relative;
+  }
+  
+  .inputField {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  
+  .inputField:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+  }
+  
+  .passwordField {
+    padding-right: 3rem;
+  }
+  
+  .passwordToggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .passwordToggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--text-secondary);
+  }
+  
+  .submitButton {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .submitButton:hover {
+    background: linear-gradient(135deg, #0e7490 0%, #0f766e 100%);
+    transform: translateY(-1px);
+  }
+  
+  .businessSection {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+  }
+  
+  .businessText {
+    font-size: 0.875rem;
+    color: #1e40af;
+    margin-bottom: 0.75rem;
+  }
+  
+  .businessButton {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .businessButton:hover {
+    background-color: var(--background);
+    border-color: var(--border-hover);
+  }
+  
+  .footer {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .terms {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  .terms a {
+    color: var(--primary-blue);
+    text-decoration: none;
+  }
+  
+  .terms a:hover {
+    text-decoration: underline;
+  }
+  
+  .switchButton {
+    color: var(--primary-blue);
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  
+  .switchButton:hover {
+    text-decoration: underline;
+  }
+  
+  .learnMoreButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: var(--primary-blue);
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  
+  .learnMoreButton:hover {
+    text-decoration: underline;
+  }
+  
+  .learnMoreButton svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .chatPreview {
+    flex: 1;
+    background: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%);
+    position: relative;
+    overflow: hidden;
+    display: none;
+  }
+  
+  @media (min-width: 1024px) {
+    .chatPreview {
+      display: flex;
+    }
+  }
+  
+  .previewOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.2) 0%, rgba(20, 184, 166, 0.2) 100%);
+  }
+  
+  .decorativeElement1 {
+    position: absolute;
+    top: 5rem;
+    right: 5rem;
+    width: 8rem;
+    height: 8rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    filter: blur(3rem);
+  }
+  
+  .decorativeElement2 {
+    position: absolute;
+    bottom: 5rem;
+    left: 5rem;
+    width: 6rem;
+    height: 6rem;
+    background: rgba(20, 184, 166, 0.2);
+    border-radius: 50%;
+    filter: blur(3rem);
+  }
+  
+  .previewContent {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 2rem;
+  }
+  
+  .previewMessages {
+    max-width: 28rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .userBubble {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .messageHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .avatarPlaceholder {
+    width: 2rem;
+    height: 2rem;
+    background-color: #e5e7eb;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  
+  .messageText {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  
+  .messageQuestion {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 0.5rem;
+  }
+  
+  .aiBubble {
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+    color: white;
+  }
+  
+  .aiHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .statusIndicator {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #4ade80;
+    border-radius: 50%;
+  }
+  
+  .aiLabel {
+    font-size: 0.875rem;
+    opacity: 0.9;
+  }
+  
+  .aiText {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+  }
+  
+  .aiAmount {
+    font-weight: bold;
+    font-size: 1.125rem;
+  }
+  
+  .glassBubble {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    color: var(--text-primary);
+  }
+  
+  .stepHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stepIndicator {
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #60a5fa;
+    border-radius: 50%;
+  }
+  
+  .stepLabel {
+    font-size: 0.875rem;
+  }
+  
+  .stepText {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stepAmount {
+    font-weight: 600;
+  }

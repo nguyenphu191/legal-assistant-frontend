@@ -1,0 +1,189 @@
+.header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .leftSide {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .menuButton {
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .menuButton:hover {
+    background-color: var(--background);
+  }
+  
+  .menuButton svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--text-secondary);
+  }
+  
+  @media (min-width: 1024px) {
+    .menuButton {
+      display: none;
+    }
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .logoIcon {
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .logoIcon span {
+    color: white;
+    font-weight: bold;
+    font-size: 0.875rem;
+  }
+  
+  .logoText {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+  }
+  
+  .rightSide {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .notificationButton {
+    position: relative;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .notificationButton:hover {
+    background-color: var(--background);
+  }
+  
+  .notificationButton svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--text-secondary);
+  }
+  
+  .notificationBadge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    width: 0.75rem;
+    height: 0.75rem;
+    background-color: #dc2626;
+    border-radius: 50%;
+  }
+  
+  .userMenu {
+    position: relative;
+  }
+  
+  .userMenuButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .userMenuButton:hover {
+    background-color: var(--background);
+  }
+  
+  .userAvatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+  }
+  
+  .userAvatar svg {
+    width: 2rem;
+    height: 2rem;
+    color: var(--text-secondary);
+  }
+  
+  .userName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+  
+  .userMenuButton svg:last-child {
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-secondary);
+  }
+  
+  .userMenuDropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    width: 12rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    padding: 0.25rem 0;
+    z-index: 50;
+  }
+  
+  .userMenuDropdown a,
+  .userMenuDropdown button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.2s ease;
+  }
+  
+  .userMenuDropdown a:hover,
+  .userMenuDropdown button:hover {
+    background-color: var(--background);
+  }
+  
+  .userMenuDropdown hr {
+    margin: 0.25rem 0;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
