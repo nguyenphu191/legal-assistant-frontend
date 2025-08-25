@@ -1,5 +1,6 @@
 'use client';
 
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useState } from 'react';
@@ -7,11 +8,14 @@ import {
   QuestionMarkCircleIcon,
   PhoneIcon,
   EnvelopeIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
+import styles from './support.module.css';
 
 export default function SupportPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const supportOptions = [
     {
@@ -40,152 +44,99 @@ export default function SupportPage() {
   const faqs = [
     {
       question: 'AI Tra cứu Luật hoạt động như thế nào?',
-      answer: 'AI Tra cứu Luật sử dụng công nghệ trí tuệ nhân tạo để phân tích và tìm kiếm thông tin pháp luật từ cơ sở dữ liệu văn bản pháp luật Việt Nam.'
+      answer: 'AI Tra cứu Luật sử dụng công nghệ trí tuệ nhân tạo để phân tích và tìm kiếm thông tin pháp luật từ cơ sở dữ liệu văn bản pháp luật Việt Nam. Hệ thống được huấn luyện trên hàng trăm nghìn văn bản pháp luật chính thức.'
     },
     {
       question: 'Thông tin từ AI có đáng tin cậy không?',
-      answer: 'AI cung cấp thông tin tham khảo dựa trên dữ liệu pháp luật chính thức. Tuy nhiên, bạn nên tham khảo ý kiến chuyên gia pháp lý cho các quyết định quan trọng.'
+      answer: 'AI cung cấp thông tin tham khảo dựa trên dữ liệu pháp luật chính thức từ các cơ quan nhà nước. Tuy nhiên, bạn nên tham khảo ý kiến chuyên gia pháp lý cho các quyết định quan trọng và luôn kiểm tra nguồn gốc của thông tin.'
     },
     {
       question: 'Tôi có thể sử dụng miễn phí không?',
-      answer: 'Chúng tôi cung cấp gói miễn phí với giới hạn số lượng truy vấn. Để sử dụng không giới hạn, bạn có thể đăng ký gói trả phí.'
+      answer: 'Chúng tôi cung cấp gói miễn phí với giới hạn số lượng truy vấn mỗi ngày. Để sử dụng không giới hạn và truy cập các tính năng nâng cao, bạn có thể đăng ký gói trả phí.'
     },
     {
       question: 'Làm sao để nâng cấp tài khoản?',
-      answer: 'Bạn có thể nâng cấp tài khoản trong phần Cài đặt hoặc liên hệ với đội ngũ bán hàng qua hotline 19005001.'
+      answer: 'Bạn có thể nâng cấp tài khoản trong phần Cài đặt hoặc liên hệ với đội ngũ bán hàng qua hotline 19005001. Chúng tôi có nhiều gói dịch vụ phù hợp với nhu cầu sử dụng khác nhau.'
+    },
+    {
+      question: 'Dữ liệu của tôi có được bảo mật không?',
+      answer: 'Chúng tôi cam kết bảo mật thông tin người dùng theo tiêu chuẩn quốc tế. Tất cả dữ liệu được mã hóa và chúng tôi không chia sẻ thông tin cá nhân với bên thứ ba mà không có sự đồng ý của bạn.'
+    },
+    {
+      question: 'Tôi có thể sử dụng trên thiết bị di động không?',
+      answer: 'Có, AI Tra cứu Luật hỗ trợ đầy đủ trên các thiết bị di động thông qua trình duyệt web. Chúng tôi cũng đang phát triển ứng dụng di động chuyên dụng sẽ ra mắt trong thời gian tới.'
     }
   ];
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--background)' }}>
-      <Header 
-        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-        user={{ name: 'Người dùng' }}
-      />
-      
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
-        />
+    <ProtectedRoute>
+      <div className={styles.supportContainer}>
+        <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         
-        <main style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
-          <div style={{ maxWidth: '64rem', margin: '0 auto' }}>
-            {/* Header */}
-            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-              <div style={{
-                width: '4rem',
-                height: '4rem',
-                background: 'linear-gradient(135deg, #0891b2 0%, #14b8a6 100%)',
-                borderRadius: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 1.5rem'
-              }}>
-                <QuestionMarkCircleIcon style={{ width: '2rem', height: '2rem', color: 'white' }} />
-              </div>
-              <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                Trung tâm Hỗ trợ
-              </h1>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1.125rem' }}>
-                Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
+        <div className={styles.supportLayout}>
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)} 
+          />
+          
+          <main className={styles.mainContent}>
+            <div className={styles.contentHeader}>
+              <h1 className={styles.pageTitle}>Trung tâm Hỗ trợ</h1>
+              <p className={styles.pageDescription}>
+                Chúng tôi luôn sẵn sàng hỗ trợ bạn. Hãy chọn cách thức liên hệ phù hợp.
               </p>
             </div>
 
             {/* Support Options */}
-            <div style={{ marginBottom: '3rem' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                Liên hệ với chúng tôi
-              </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(20rem, 1fr))', gap: '1.5rem' }}>
-                {supportOptions.map((option, index) => {
-                  const Icon = option.icon;
-                  return (
-                    <div
-                      key={index}
-                      style={{
-                        background: 'white',
-                        borderRadius: 'var(--radius-xl)',
-                        padding: '1.5rem',
-                        boxShadow: 'var(--shadow)',
-                        border: '1px solid var(--border)',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
-                      }}
-                      onClick={option.action}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = 'var(--shadow)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}
-                    >
-                      <Icon style={{ width: '2.5rem', height: '2.5rem', color: '#0891b2', marginBottom: '1rem' }} />
-                      <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                        {option.title}
-                      </h3>
-                      <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-                        {option.description}
-                      </p>
-                      <p style={{ color: '#0891b2', fontWeight: '500' }}>
-                        {option.contact}
-                      </p>
+            <div className={styles.supportOptions}>
+              {supportOptions.map((option, index) => {
+                const Icon = option.icon;
+                return (
+                  <div 
+                    key={index} 
+                    className={styles.supportCard}
+                    onClick={option.action}
+                  >
+                    <div className={styles.cardIcon}>
+                      <Icon />
                     </div>
-                  );
-                })}
-              </div>
+                    <h3 className={styles.cardTitle}>{option.title}</h3>
+                    <p className={styles.cardDescription}>{option.description}</p>
+                    <div className={styles.cardContact}>{option.contact}</div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* FAQ */}
-            <div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                Câu hỏi thường gặp
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* FAQ Section */}
+            <div className={styles.faqSection}>
+              <h2 className={styles.faqTitle}>Câu hỏi thường gặp</h2>
+              <div className={styles.faqList}>
                 {faqs.map((faq, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      background: 'white',
-                      borderRadius: 'var(--radius-lg)',
-                      padding: '1.5rem',
-                      boxShadow: 'var(--shadow)',
-                      border: '1px solid var(--border)'
-                    }}
-                  >
-                    <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-                      {faq.question}
-                    </h3>
-                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                      {faq.answer}
-                    </p>
+                  <div key={index} className={styles.faqItem}>
+                    <button
+                      className={styles.faqQuestion}
+                      onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    >
+                      <span>{faq.question}</span>
+                      <ChevronDownIcon 
+                        className={`${styles.chevronIcon} ${
+                          openFaq === index ? styles.chevronOpen : ''
+                        }`}
+                      />
+                    </button>
+                    {openFaq === index && (
+                      <div className={styles.faqAnswer}>
+                        <p>{faq.answer}</p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Company Info */}
-            <div style={{
-              marginTop: '3rem',
-              padding: '2rem',
-              background: 'linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%)',
-              borderRadius: 'var(--radius-xl)',
-              textAlign: 'center'
-            }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII
-              </h3>
-              <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                Đơn vị phát triển và vận hành hệ thống AI Tra cứu Luật.<br />
-                Cam kết mang đến những giải pháp công nghệ tốt nhất cho lĩnh vực pháp lý.
-              </p>
-            </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
