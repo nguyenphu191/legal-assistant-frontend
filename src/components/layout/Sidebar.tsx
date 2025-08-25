@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
   ClipboardDocumentListIcon,
   QuestionMarkCircleIcon,
   PlusIcon,
-  SparklesIcon
+  SparklesIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import styles from './Sidebar.module.css';
 
@@ -18,11 +20,18 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  {
+   {
     id: 'chat',
     title: 'Chat với AI',
     icon: ChatBubbleLeftRightIcon,
     href: '/chat',
+    badge: null
+  },
+  {
+    id: 'conversations',
+    title: 'Lịch sử trò chuyện',
+    icon: ClockIcon, // Import from heroicons
+    href: '/conversations',
     badge: null
   },
   {
@@ -57,6 +66,12 @@ const navigationItems = [
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { currentUser } = useAuth();
+
+  const handleNewChat = () => {
+    // Logic to start new chat conversation
+    window.location.href = '/chat';
+  };
 
   return (
     <>
@@ -73,7 +88,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className={styles.sidebarHeader}>
-            <button className={styles.newChatButton}>
+            <button 
+              className={styles.newChatButton}
+              onClick={handleNewChat}
+            >
               <PlusIcon />
               <span>Cuộc trò chuyện mới</span>
             </button>
@@ -90,7 +108,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <li key={item.id}>
                     <Link
                       href={item.href}
-                      className={`${styles.navigationLink} ${isActive ? styles.active : ''}`}
+                      className={`${styles.navigationLink} ${
+                        isActive ? styles.active : ''
+                      }`}
                       onClick={onClose}
                     >
                       <div className={styles.linkContent}>
@@ -98,9 +118,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <span>{item.title}</span>
                       </div>
                       {item.badge && (
-                        <span className={styles.badge}>
-                          {item.badge}
-                        </span>
+                        <span className={styles.badge}>{item.badge}</span>
                       )}
                     </Link>
                   </li>
@@ -112,9 +130,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/* Footer */}
           <div className={styles.sidebarFooter}>
             <div className={styles.footerContent}>
-              <div className={styles.hotline}>Hotline: 19005001</div>
+              <div className={styles.hotline}>
+                <strong>Hotline: 19005001</strong>
+              </div>
               <div className={styles.company}>
-                Một sản phẩm của<br />
+                Phát triển bởi<br />
                 <strong>VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII</strong>
               </div>
             </div>

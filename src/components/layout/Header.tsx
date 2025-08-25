@@ -1,95 +1,116 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { 
-  Bars3Icon, 
-  BellIcon, 
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import {
+  Bars3Icon,
   UserCircleIcon,
-  ChevronDownIcon 
+  ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import styles from './Header.module.css';
 
 interface HeaderProps {
   onMenuToggle?: () => void;
-  user?: {
-    name: string;
-    avatar?: string;
-  };
 }
 
-export default function Header({ onMenuToggle, user }: HeaderProps) {
-  const [showUserMenu, setShowUserMenu] = useState(false);
+export default function Header({ onMenuToggle }: HeaderProps) {
+  const { currentUser, logout } = useAuth();
+  const router = useRouter();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const handleLogin = () => {
+    router.push('/auth');
+  };
 
   return (
     <header className={styles.header}>
-      {/* Left side */}
-      <div className={styles.leftSide}>
-        <button
-          onClick={onMenuToggle}
-          className={styles.menuButton}
-        >
-          <Bars3Icon />
-        </button>
+      {/* Left side - Logo and menu button */}
+      <div className={styles.leftSection}>
+        {onMenuToggle && (
+          <button 
+            className={styles.menuButton}
+            onClick={onMenuToggle}
+          >
+            <Bars3Icon />
+          </button>
+        )}
         
         <Link href="/" className={styles.logo}>
           <div className={styles.logoIcon}>
             <span>AI</span>
           </div>
-          <span className={styles.logoText}>TRA CỨU LUẬT</span>
+          <span className={styles.logoText}>AI Tra cứu Luật</span>
         </Link>
       </div>
 
-      {/* Right side */}
-      <div className={styles.rightSide}>
-        {/* Notifications */}
-        <button className={styles.notificationButton}>
-          <BellIcon />
-          <span className={styles.notificationBadge}></span>
-        </button>
+      {/* Right side - User info */}
+      <div className={styles.rightSection}>
+        {currentUser ? (
+          <div className={styles.userMenu}>
+            <button 
+              className={styles.userButton}
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+            >
+              {currentUser.photoURL ? (
+                <img 
+                  src={currentUser.photoURL} 
+                  alt="Avatar"
+                  className={styles.avatar}
+                />
+              ) : (
+                <UserCircleIcon className={styles.avatarIcon} />
+              )}
+              <div className={styles.userInfo}>
+                <span className={styles.userName}>
+                  {currentUser.displayName || currentUser.email}
+                </span>
+                <span className={styles.userRole}>Người dùng</span>
+              </div>
+              <ChevronDownIcon className={styles.chevronIcon} />
+            </button>
 
-        {/* User menu */}
-        <div className={styles.userMenu}>
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className={styles.userMenuButton}
-          >
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className={styles.userAvatar}
-              />
-            ) : (
-              <UserCircleIcon className={styles.userAvatar} />
+            {userMenuOpen && (
+              <div className={styles.userDropdown}>
+                <Link href="/profile" className={styles.dropdownItem}>
+                  <UserCircleIcon />
+                  <span>Hồ sơ</span>
+                </Link>
+                <Link href="/settings" className={styles.dropdownItem}>
+                  <Cog6ToothIcon />
+                  <span>Cài đặt</span>
+                </Link>
+                <div className={styles.dropdownDivider} />
+                <button 
+                  className={styles.dropdownItem}
+                  onClick={handleLogout}
+                >
+                  <ArrowRightOnRectangleIcon />
+                  <span>Đăng xuất</span>
+                </button>
+              </div>
             )}
-            <span className={styles.userName}>
-              {user?.name || 'Người dùng'}
-            </span>
-            <ChevronDownIcon />
+          </div>
+        ) : (
+          <button 
+            className={styles.loginButton}
+            onClick={handleLogin}
+          >
+            Đăng nhập
           </button>
-
-          {/* Dropdown menu */}
-          {showUserMenu && (
-            <div className={styles.userMenuDropdown}>
-              <Link href="/profile">
-                Thông tin cá nhân
-              </Link>
-              <Link href="/settings">
-                Cài đặt
-              </Link>
-              <hr />
-              <button
-                onClick={() => {
-                  // Handle logout
-                  console.log('Đăng xuất');
-                }}
-              >
-                Đăng xuất
-              </button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </header>
   );
