@@ -10,7 +10,7 @@ import {
   QuestionMarkCircleIcon,
   PlusIcon,
   SparklesIcon,
-  ClockIcon
+  ClockIcon  // ← QUAN TRỌNG: Đảm bảo import này có
 } from '@heroicons/react/24/outline';
 import styles from './Sidebar.module.css';
 
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-   {
+  {
     id: 'chat',
     title: 'Chat với AI',
     icon: ChatBubbleLeftRightIcon,
@@ -30,7 +30,7 @@ const navigationItems = [
   {
     id: 'conversations',
     title: 'Lịch sử trò chuyện',
-    icon: ClockIcon, // Import from heroicons
+    icon: ClockIcon, // ← QUAN TRỌNG: Sử dụng ClockIcon
     href: '/conversations',
     badge: null
   },

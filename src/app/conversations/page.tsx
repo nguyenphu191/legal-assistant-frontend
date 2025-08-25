@@ -1,20 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useConversations } from '@/contexts/ConversationsContext';
 import ConversationItem from '@/components/conversations/ConversationItem';
+import ConversationStatsComponent from '@/components/conversations/ConversationStats';
+import BulkActionsToolbar from '@/components/conversations/BulkActionsToolbar';
+import ImportExportActions from '@/components/conversations/ImportExportActions';
 import {
   MagnifyingGlassIcon,
   PlusIcon,
   ChatBubbleLeftRightIcon,
   FunnelIcon,
-  XMarkIcon
+  XMarkIcon,
+  Squares2X2Icon,
+  ListBulletIcon
 } from '@heroicons/react/24/outline';
 import styles from './conversations.module.css';
+
+type ViewMode = 'grid' | 'list';
+type FilterType = 'all' | 'favorites' | 'recent' | 'today';
 
 export default function ConversationsPage() {
   const router = useRouter();
@@ -22,18 +30,53 @@ export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'title' | 'messages'>('date');
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [selectedConversations, setSelectedConversations] = useState<string[]>([]);
+  const [showBulkActions, setShowBulkActions] = useState(false);
   
   const { 
     conversations, 
     loading, 
+    stats,
     createConversation, 
     deleteConversation,
-    searchConversations
+    bulkDeleteConversations,
+    toggleFavorite,
+    updateConversationTitle,
+    searchConversations,
+    exportConversations,
+    importConversations
   } = useConversations();
 
-  const filteredConversations = searchQuery.trim() 
-    ? searchConversations(searchQuery)
-    : conversations;
+  // Filter conversations based on filter type
+  const getFilteredConversations = () => {
+    let filtered = searchQuery.trim() 
+      ? searchConversations(searchQuery)
+      : conversations;
+
+    switch (filterType) {
+      case 'favorites':
+        filtered = filtered.filter(conv => conv.isFavorite);
+        break;
+      case 'recent':
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        filtered = filtered.filter(conv => conv.updatedAt >= weekAgo);
+        break;
+      case 'today':
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        filtered = filtered.filter(conv => conv.updatedAt >= today);
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  };
+
+  const filteredConversations = getFilteredConversations();
 
   const sortedConversations = [...filteredConversations].sort((a, b) => {
     switch (sortBy) {
@@ -53,19 +96,77 @@ export default function ConversationsPage() {
     router.push(`/chat?id=${conversationId}`);
   };
 
+  const handleViewConversation = (id: string) => {
+    router.push(`/chat?id=${id}`);
+  };
+
   const handleDeleteConversation = (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa cuộc trò chuyện này?')) {
       deleteConversation(id);
     }
   };
 
-  const handleViewConversation = (id: string) => {
-    router.push(`/chat?id=${id}`);
+  const handleToggleFavorite = (id: string) => {
+    toggleFavorite(id);
+  };
+
+  const handleUpdateTitle = (id: string, newTitle: string) => {
+    updateConversationTitle(id, newTitle);
   };
 
   const handleClearSearch = () => {
     setSearchQuery('');
   };
+
+  // Bulk operations
+  const handleSelectConversation = (id: string, selected: boolean) => {
+    if (selected) {
+      setSelectedConversations(prev => [...prev, id]);
+    } else {
+      setSelectedConversations(prev => prev.filter(convId => convId !== id));
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedConversations(sortedConversations.map(conv => conv.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedConversations([]);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedConversations.length === 0) return;
+    
+    const count = selectedConversations.length;
+    if (window.confirm(`Bạn có chắc chắn muốn xóa ${count} cuộc trò chuyện đã chọn?`)) {
+      bulkDeleteConversations(selectedConversations);
+      setSelectedConversations([]);
+      setShowBulkActions(false);
+    }
+  };
+
+  const handleBulkFavorite = () => {
+    selectedConversations.forEach(id => toggleFavorite(id));
+    setSelectedConversations([]);
+    setShowBulkActions(false);
+  };
+
+  const toggleBulkMode = () => {
+    setShowBulkActions(!showBulkActions);
+    setSelectedConversations([]);
+  };
+
+  // Import/Export
+  const handleExport = () => {
+    exportConversations();
+  };
+
+  const handleImport = (data: string) => {
+    return importConversations(data);
+  };
+
+  const allSelected = selectedConversations.length === sortedConversations.length && sortedConversations.length > 0;
 
   return (
     <ProtectedRoute>
@@ -73,29 +174,58 @@ export default function ConversationsPage() {
         <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         
         <div className={styles.conversationsLayout}>
-          <Sidebar 
-            isOpen={sidebarOpen} 
-            onClose={() => setSidebarOpen(false)} 
-          />
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           
           <main className={styles.mainContent}>
-            {/* Header */}
+            {/* Stats Section */}
+            <ConversationStatsComponent stats={stats} className={styles.statsSection} />
+
+            {/* Page Header */}
             <div className={styles.pageHeader}>
               <div className={styles.titleSection}>
                 <h1 className={styles.pageTitle}>Lịch sử trò chuyện</h1>
                 <p className={styles.pageDescription}>
-                  Quản lý và xem lại các cuộc trò chuyện của bạn với AI
+                  Quản lý và tìm kiếm các cuộc trò chuyện của bạn
                 </p>
               </div>
-              
-              <button 
-                className={styles.newConversationButton}
-                onClick={handleNewConversation}
-              >
-                <PlusIcon />
-                <span>Cuộc trò chuyện mới</span>
-              </button>
+
+              <div className={styles.headerActions}>
+                <ImportExportActions
+                  onExport={handleExport}
+                  onImport={handleImport}
+                  conversationCount={conversations.length}
+                />
+                
+                <button
+                  onClick={toggleBulkMode}
+                  className={`${styles.bulkModeButton} ${showBulkActions ? styles.active : ''}`}
+                >
+                  Chọn nhiều
+                </button>
+
+                <button 
+                  onClick={handleNewConversation}
+                  className={styles.newConversationButton}
+                >
+                  <PlusIcon />
+                  <span>Trò chuyện mới</span>
+                </button>
+              </div>
             </div>
+
+            {/* Bulk Actions Toolbar */}
+            {showBulkActions && (
+              <BulkActionsToolbar
+                selectedCount={selectedConversations.length}
+                totalCount={sortedConversations.length}
+                allSelected={allSelected}
+                onSelectAll={handleSelectAll}
+                onDeselectAll={handleDeselectAll}
+                onBulkDelete={handleBulkDelete}
+                onBulkFavorite={handleBulkFavorite}
+                onClose={() => setShowBulkActions(false)}
+              />
+            )}
 
             {/* Search and Filters */}
             <div className={styles.searchSection}>
@@ -105,40 +235,70 @@ export default function ConversationsPage() {
                   <input
                     type="text"
                     placeholder="Tìm kiếm cuộc trò chuyện..."
-                    className={styles.searchInput}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    className={styles.searchInput}
                   />
                   {searchQuery && (
                     <button
-                      className={styles.clearSearchButton}
                       onClick={handleClearSearch}
+                      className={styles.clearSearchButton}
                     >
                       <XMarkIcon />
                     </button>
                   )}
                 </div>
 
-                <button 
-                  className={`${styles.filterButton} ${showFilters ? styles.active : ''}`}
+                <button
                   onClick={() => setShowFilters(!showFilters)}
+                  className={`${styles.filterButton} ${showFilters ? styles.active : ''}`}
                 >
                   <FunnelIcon />
-                  <span>Bộ lọc</span>
+                  <span>Lọc</span>
                 </button>
+
+                {/* View Mode Toggle */}
+                <div className={styles.viewModeToggle}>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`${styles.viewModeButton} ${viewMode === 'grid' ? styles.active : ''}`}
+                  >
+                    <Squares2X2Icon />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`${styles.viewModeButton} ${viewMode === 'list' ? styles.active : ''}`}
+                  >
+                    <ListBulletIcon />
+                  </button>
+                </div>
               </div>
 
-              {/* Filter Panel */}
+              {/* Filters Panel */}
               {showFilters && (
                 <div className={styles.filtersPanel}>
                   <div className={styles.filterGroup}>
-                    <label className={styles.filterLabel}>Sắp xếp theo:</label>
-                    <select 
+                    <label className={styles.filterLabel}>Hiển thị:</label>
+                    <select
+                      value={filterType}
+                      onChange={(e) => setFilterType(e.target.value as FilterType)}
                       className={styles.filterSelect}
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
                     >
-                      <option value="date">Thời gian cập nhật</option>
+                      <option value="all">Tất cả</option>
+                      <option value="favorites">Yêu thích</option>
+                      <option value="recent">Gần đây (7 ngày)</option>
+                      <option value="today">Hôm nay</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.filterGroup}>
+                    <label className={styles.filterLabel}>Sắp xếp:</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as 'date' | 'title' | 'messages')}
+                      className={styles.filterSelect}
+                    >
+                      <option value="date">Ngày cập nhật</option>
                       <option value="title">Tiêu đề</option>
                       <option value="messages">Số tin nhắn</option>
                     </select>
@@ -156,51 +316,48 @@ export default function ConversationsPage() {
                 </div>
               ) : sortedConversations.length === 0 ? (
                 <div className={styles.emptyState}>
-                  {searchQuery ? (
-                    <>
-                      <MagnifyingGlassIcon className={styles.emptyIcon} />
-                      <h3>Không tìm thấy kết quả</h3>
-                      <p>Không có cuộc trò chuyện nào khớp với "{searchQuery}"</p>
-                      <button 
-                        className={styles.clearSearchButton}
-                        onClick={handleClearSearch}
-                      >
-                        Xóa tìm kiếm
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <ChatBubbleLeftRightIcon className={styles.emptyIcon} />
-                      <h3>Chưa có cuộc trò chuyện</h3>
-                      <p>Bắt đầu cuộc trò chuyện đầu tiên của bạn với AI</p>
-                      <button 
-                        className={styles.startChatButton}
-                        onClick={handleNewConversation}
-                      >
-                        <PlusIcon />
-                        Bắt đầu trò chuyện
-                      </button>
-                    </>
+                  <ChatBubbleLeftRightIcon className={styles.emptyIcon} />
+                  <h3>
+                    {searchQuery || filterType !== 'all' 
+                      ? 'Không tìm thấy kết quả' 
+                      : 'Chưa có cuộc trò chuyện nào'
+                    }
+                  </h3>
+                  <p>
+                    {searchQuery || filterType !== 'all'
+                      ? 'Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc'
+                      : 'Bắt đầu cuộc trò chuyện đầu tiên với AI Tra cứu Luật'
+                    }
+                  </p>
+                  {!searchQuery && filterType === 'all' && (
+                    <button onClick={handleNewConversation} className={styles.startChatButton}>
+                      <PlusIcon />
+                      <span>Bắt đầu trò chuyện</span>
+                    </button>
                   )}
                 </div>
               ) : (
                 <>
                   <div className={styles.resultsHeader}>
                     <p className={styles.resultsCount}>
-                      {searchQuery 
-                        ? `${sortedConversations.length} kết quả cho "${searchQuery}"`
+                      {searchQuery || filterType !== 'all' 
+                        ? `${sortedConversations.length} kết quả${searchQuery ? ` cho "${searchQuery}"` : ''}`
                         : `${sortedConversations.length} cuộc trò chuyện`
                       }
                     </p>
                   </div>
 
-                  <div className={styles.conversationsGrid}>
+                  <div className={`${styles.conversationsGrid} ${viewMode === 'list' ? styles.listView : ''}`}>
                     {sortedConversations.map((conversation) => (
                       <ConversationItem
                         key={conversation.id}
                         conversation={conversation}
                         onClick={() => handleViewConversation(conversation.id)}
                         onDelete={() => handleDeleteConversation(conversation.id)}
+                        onToggleFavorite={() => handleToggleFavorite(conversation.id)}
+                        onUpdateTitle={(newTitle) => handleUpdateTitle(conversation.id, newTitle)}
+                        isSelected={showBulkActions && selectedConversations.includes(conversation.id)}
+                        onSelect={showBulkActions ? (selected) => handleSelectConversation(conversation.id, selected) : undefined}
                       />
                     ))}
                   </div>
