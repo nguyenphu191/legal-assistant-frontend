@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Header from '@/components/layout/Header';
 import { 
   ChatBubbleLeftRightIcon,
   DocumentTextIcon,
@@ -48,27 +49,9 @@ export default function HomePage() {
 
   return (
     <div className={styles.homePage}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.container}>
-          <Link href="/" className={styles.logo}>
-            <div className={styles.logoIcon}>
-              <span>AI</span>
-            </div>
-            <span className={styles.logoText}>AI Tra cứu Luật</span>
-          </Link>
-          
-          <nav className={styles.nav}>
-            <Link href="/documents">Văn bản</Link>
-            <Link href="/support">Hỗ trợ</Link>
-            <Link href="/auth" className={styles.loginButton}>
-              Đăng nhập
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* Hero Section */}
+      {/* Phần đầu trang */}
+      <Header />
+      {/* Phần giới thiệu chính */}
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.heroContent}>
@@ -94,28 +77,16 @@ export default function HomePage() {
           </div>
 
           <div className={styles.heroImage}>
-            <div className={styles.chatPreview}>
-              <div className={styles.chatHeader}>
-                <div className={styles.chatAvatar}>AI</div>
-                <div>
-                  <div className={styles.chatName}>AI Tra cứu Luật</div>
-                  <div className={styles.chatStatus}>Đang hoạt động</div>
-                </div>
-              </div>
-              <div className={styles.chatMessages}>
-                <div className={styles.chatMessage}>
-                  <div className={styles.messageContent}>
-                    Xin chào! Tôi có thể giúp bạn tra cứu thông tin pháp luật. 
-                    Bạn có câu hỏi gì cần hỗ trợ không?
-                  </div>
-                </div>
-              </div>
-            </div>
+            <img 
+              src="/banner_doc.png" 
+              alt="Ảnh giới thiệu" 
+              className={styles.bannerdoc}
+            />
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      
+      {/* Phần tính năng */}
       <section className={styles.features}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
@@ -139,8 +110,15 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Benefits Section */}
+      {/* Banner ngang */}
+      <div className={styles.bannerHorizontal}>
+        <img 
+          src="/banner_ngang.png" 
+          alt="Banner ngang" 
+          className={styles.bannerHorizontalImage}
+        />
+      </div>
+      {/* Phần lợi ích */}
       <section className={styles.benefits}>
         <div className={styles.container}>
           <div className={styles.benefitsContent}>
@@ -178,18 +156,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Phần chân trang */}
       <footer className={styles.footer}>
         <div className={styles.container}>
           <div className={styles.footerContent}>
             <div className={styles.footerBrand}>
               <div className={styles.footerLogo}>
                 <div className={styles.logoIcon}>
-                  <span>AI</span>
+                  <img src="/logo_nobgr.png" alt="Logo" className={styles.logoImage} />
                 </div>
-                <span>AI Tra cứu Luật</span>
+                <span>Hệ thống hỗ trợ pháp lý thông minh</span>
               </div>
-              <p>Trợ lý AI Pháp luật đầu tiên tại Việt Nam</p>
+              <p>Trợ lý AI Pháp luật tại Việt Nam</p>
             </div>
             
             <div className={styles.footerLinks}>
@@ -208,10 +186,11 @@ export default function HomePage() {
           </div>
           
           <div className={styles.footerBottom}>
-            <p>&copy; 2024 VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII. Tất cả quyền được bảo lưu.</p>
+            <p>&copy; 2025. Legal Assistant. Ptit Team.</p>
           </div>
         </div>
       </footer>
     </div>
+    
   );
 }

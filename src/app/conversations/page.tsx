@@ -8,8 +8,7 @@ import Sidebar from '@/components/layout/Sidebar';
 import { useConversations } from '@/contexts/ConversationsContext';
 import ConversationItem from '@/components/conversations/ConversationItem';
 import ConversationStatsComponent from '@/components/conversations/ConversationStats';
-import BulkActionsToolbar from '@/components/conversations/BulkActionsToolbar';
-import ImportExportActions from '@/components/conversations/ImportExportActions';
+
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -189,43 +188,7 @@ export default function ConversationsPage() {
                 </p>
               </div>
 
-              <div className={styles.headerActions}>
-                <ImportExportActions
-                  onExport={handleExport}
-                  onImport={handleImport}
-                  conversationCount={conversations.length}
-                />
-                
-                <button
-                  onClick={toggleBulkMode}
-                  className={`${styles.bulkModeButton} ${showBulkActions ? styles.active : ''}`}
-                >
-                  Chọn nhiều
-                </button>
-
-                <button 
-                  onClick={handleNewConversation}
-                  className={styles.newConversationButton}
-                >
-                  <PlusIcon />
-                  <span>Trò chuyện mới</span>
-                </button>
-              </div>
             </div>
-
-            {/* Bulk Actions Toolbar */}
-            {showBulkActions && (
-              <BulkActionsToolbar
-                selectedCount={selectedConversations.length}
-                totalCount={sortedConversations.length}
-                allSelected={allSelected}
-                onSelectAll={handleSelectAll}
-                onDeselectAll={handleDeselectAll}
-                onBulkDelete={handleBulkDelete}
-                onBulkFavorite={handleBulkFavorite}
-                onClose={() => setShowBulkActions(false)}
-              />
-            )}
 
             {/* Search and Filters */}
             <div className={styles.searchSection}>
