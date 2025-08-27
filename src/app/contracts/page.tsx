@@ -23,11 +23,8 @@ export default function ContractsPage() {
 
   return (
     <div className={styles.contractsContainer}>
-      <Header 
-        onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-        user={{ name: 'Người dùng' }}
-      />
-      
+      <Header />
+
       <div className={styles.contractsLayout}>
         <Sidebar 
           isOpen={sidebarOpen} 

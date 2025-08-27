@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8xrw8YpD0D6FAflNhLNn09ZhRgXFizkE",
@@ -20,6 +21,9 @@ export const auth = getAuth(app);
 
 // Khởi tạo Firestore (cơ sở dữ liệu của Firebase)
 export const db = getFirestore(app);
+
+// Khởi tạo Firebase Storage (lưu trữ file)
+export const storage = getStorage(app);
 
 // Cấu hình nhà cung cấp dịch vụ đăng nhập
 export const googleProvider = new GoogleAuthProvider();

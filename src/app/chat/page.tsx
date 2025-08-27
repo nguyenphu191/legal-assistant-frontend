@@ -120,7 +120,7 @@ export default function ChatPage() {
               {messages.length === 0 ? (
                 <div className={styles.welcomeScreen}>
                   <div className={styles.welcomeLogo}>
-                    <span>AI</span>
+                    <span>LA</span>
                   </div>
                   
                   <h1 className={styles.welcomeTitle}>

@@ -10,7 +10,8 @@ import {
   QuestionMarkCircleIcon,
   PlusIcon,
   SparklesIcon,
-  ClockIcon  // ← QUAN TRỌNG: Đảm bảo import này có
+  ClockIcon,
+  UserCircleIcon  // Thêm icon cho Profile
 } from '@heroicons/react/24/outline';
 import styles from './Sidebar.module.css';
 
@@ -30,7 +31,7 @@ const navigationItems = [
   {
     id: 'conversations',
     title: 'Lịch sử trò chuyện',
-    icon: ClockIcon, // ← QUAN TRỌNG: Sử dụng ClockIcon
+    icon: ClockIcon,
     href: '/conversations',
     badge: null
   },
@@ -54,6 +55,13 @@ const navigationItems = [
     icon: SparklesIcon,
     href: '/procedures',
     badge: 'MỚI'
+  },
+  {
+    id: 'profile',  // Thêm menu Profile
+    title: 'Thông tin cá nhân',
+    icon: UserCircleIcon,
+    href: '/profile',
+    badge: null
   },
   {
     id: 'support',

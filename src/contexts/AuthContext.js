@@ -9,8 +9,9 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { auth, db, googleProvider, facebookProvider } from '../configs/firebase';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage, googleProvider, facebookProvider } from '../configs/firebase';
 
 const AuthContext = createContext();
 
@@ -54,6 +55,56 @@ export function AuthProvider({ children }) {
     }
     
     return userRef;
+  };
+
+  // Cập nhật thông tin profile người dùng
+  const updateUserProfile = async (updates) => {
+    if (!currentUser) throw new Error('Người dùng chưa đăng nhập');
+
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      let updatedData = { ...updates };
+
+      // Nếu có upload avatar
+      if (updates.avatar) {
+        const file = updates.avatar;
+        const fileExtension = file.name.split('.').pop();
+        const fileName = `avatars/${currentUser.uid}.${fileExtension}`;
+        const storageRef = ref(storage, fileName);
+        
+        // Upload file lên Firebase Storage
+        const snapshot = await uploadBytes(storageRef, file);
+        const photoURL = await getDownloadURL(snapshot.ref);
+        
+        // Cập nhật photoURL trong Firebase Auth
+        await updateProfile(currentUser, { photoURL });
+        
+        // Thay thế avatar bằng photoURL để lưu vào Firestore
+        updatedData = { ...updates, photoURL };
+        delete updatedData.avatar;
+      }
+
+      // Nếu có cập nhật displayName
+      if (updates.displayName) {
+        await updateProfile(currentUser, { displayName: updates.displayName });
+      }
+
+      // Cập nhật thông tin trong Firestore
+      await updateDoc(userRef, updatedData);
+
+      // Cập nhật currentUser state
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        setCurrentUser(prev => ({
+          ...prev,
+          ...userDoc.data()
+        }));
+      }
+
+    } catch (error) {
+      console.error('Lỗi khi cập nhật profile:', error);
+      throw error;
+    }
   };
 
   // Đăng ký với email và mật khẩu
@@ -149,6 +200,7 @@ export function AuthProvider({ children }) {
     loginWithGoogle,   // Hàm đăng nhập bằng Google
     loginWithFacebook, // Hàm đăng nhập bằng Facebook
     logout,            // Hàm đăng xuất
+    updateUserProfile, // Hàm cập nhật profile
     loading            // Trạng thái tải dữ liệu
   };
 
