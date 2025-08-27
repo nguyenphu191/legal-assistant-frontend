@@ -1,4 +1,6 @@
-/* Loading State */
+/* Profile Page Styles */
+
+/* Loading Container */
 .loadingContainer {
   display: flex;
   flex-direction: column;
@@ -11,8 +13,8 @@
 .spinner {
   width: 3rem;
   height: 3rem;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #0891b2;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #0891b2;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -30,22 +32,18 @@
 
 .mainContent {
   display: flex;
-  min-height: calc(100vh - 6rem);
+  min-height: calc(100vh - 4rem);
 }
 
 .content {
   flex: 1;
   padding: 2rem;
-}
-
-@media (max-width: 1024px) {
-  .content {
-    padding: 1rem;
-  }
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .container {
-  max-width: 4xl;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -55,19 +53,16 @@
 }
 
 .pageTitle {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #1e293b;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 .pageDescription {
-  color: #6b7280;
-  font-size: 1.125rem;
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
 }
 
 /* Alert Messages */
@@ -75,23 +70,23 @@
 .alertSuccess {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
-  font-weight: 500;
+  position: relative;
+  gap: 0.75rem;
 }
 
 .alertError {
   background: #fef2f2;
-  color: #dc2626;
   border: 1px solid #fecaca;
+  color: #dc2626;
 }
 
 .alertSuccess {
   background: #f0fdf4;
-  color: #059669;
   border: 1px solid #bbf7d0;
+  color: #16a34a;
 }
 
 .alertIcon {
@@ -100,11 +95,33 @@
   flex-shrink: 0;
 }
 
+.alertCloseButton {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.alertCloseButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.alertCloseIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
 /* Profile Card */
 .profileCard {
   background: white;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   overflow: hidden;
 }
 
@@ -132,6 +149,15 @@
 .avatarContainer:hover {
   border-color: rgba(255, 255, 255, 0.8);
   transform: scale(1.05);
+}
+
+.avatarContainer.uploading {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.avatarContainer.uploading:hover {
+  transform: none;
 }
 
 .avatar {
@@ -167,6 +193,11 @@
   opacity: 1;
 }
 
+.avatarContainer.uploading .avatarOverlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+
 .cameraIcon {
   width: 2rem;
   height: 2rem;
@@ -196,6 +227,7 @@
   font-size: 1rem;
   opacity: 0.9;
   font-weight: 500;
+  margin: 0;
 }
 
 /* Form Section */
@@ -209,28 +241,29 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .formTitle {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: #1e293b;
+  margin: 0;
 }
 
-/* Form Actions */
 .editButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: #0891b2;
   color: white;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .editButton:hover {
@@ -242,55 +275,49 @@
   gap: 0.75rem;
 }
 
+.cancelButton,
 .saveButton {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #059669;
-  color: white;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.saveButton:hover:not(:disabled) {
-  background: #047857;
-}
-
-.saveButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  transition: all 0.2s;
 }
 
 .cancelButton {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #4b5563;
+  background: #e2e8f0;
+  color: #475569;
 }
 
-.cancelButton:disabled {
-  opacity: 0.6;
+.saveButton {
+  background: #16a34a;
+  color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .buttonIcon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Form Grid */
@@ -303,21 +330,22 @@
 .formGroup {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
 }
 
 .formLabel {
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #374151;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .formInput {
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .formInput:focus {
@@ -326,86 +354,69 @@
   box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
 }
 
-.formValue {
-  padding: 0.75rem;
+.formInput:disabled {
   background: #f9fafb;
-  border-radius: 0.5rem;
-  color: #1f2937;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.formValue {
+  padding: 0.75rem 0;
   font-size: 0.875rem;
+  color: #1f2937;
   min-height: 2.75rem;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .emailNote {
   font-size: 0.75rem;
   color: #6b7280;
-  margin-left: 0.5rem;
   font-style: italic;
 }
 
-/* Actions Section */
-.actionsSection {
-  padding: 2rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f8fafc;
-}
-
-.actionButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.secondaryButton {
-  padding: 0.75rem 1.5rem;
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+/* Badges */
+.roleBadge,
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.secondaryButton:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+.roleAdmin {
+  background: #fef3c7;
+  color: #92400e;
 }
 
-.dangerButton {
-  padding: 0.75rem 1.5rem;
-  background: #dc2626;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.roleUser {
+  background: #e0e7ff;
+  color: #3730a3;
 }
 
-.dangerButton:hover {
-  background: #b91c1c;
+.statusVerified {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusPending {
+  background: #fef3c7;
+  color: #92400e;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .formHeader {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  .content {
+    padding: 1rem;
   }
   
-  .editActions {
-    flex-direction: column;
-  }
-  
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
-  
-  .actionButtons {
-    flex-direction: column;
+  .pageTitle {
+    font-size: 1.5rem;
   }
   
   .avatarSection {
@@ -419,5 +430,58 @@
   
   .userName {
     font-size: 1.5rem;
+  }
+  
+  .formSection {
+    padding: 1.5rem;
+  }
+  
+  .formHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .editActions {
+    justify-content: stretch;
+  }
+  
+  .editActions > * {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .alertError,
+  .alertSuccess {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0;
+  }
+  
+  .profileCard {
+    border-radius: 0;
+  }
+  
+  .avatarContainer {
+    width: 5rem;
+    height: 5rem;
+  }
+  
+  .userName {
+    font-size: 1.25rem;
+  }
+  
+  .formSection {
+    padding: 1rem;
   }
 }
