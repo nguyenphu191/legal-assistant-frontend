@@ -258,8 +258,8 @@
   display: flex;
   justify-content: center;
   overflow: hidden;
- margin-left: clamp(1rem, 5vw, 20rem);
- margin-right: clamp(1rem, 5vw, 20rem);
+ margin-left: clamp(1rem, 8vw, 30rem);
+ margin-right: clamp(1rem, 8vw, 30rem);
 }
 
 .bannerHorizontalImage {
@@ -280,7 +280,7 @@
 }
 
 .sectionHeader h2 {
-  font-size: 2rem; /* Giảm kích thước chữ */
+  font-size: 2rem; 
   font-weight: bold;
   color: var(--text-primary);
   margin-bottom: 0.75rem;
@@ -352,7 +352,7 @@
 .featureDescription {
   color: var(--text-secondary);
   line-height: 1.5;
-  font-size: 0.875rem; /* Giảm kích thước chữ */
+  font-size: 0.875rem; 
 }
 
 /* Benefits Section */
@@ -437,7 +437,7 @@
 }
 
 .statNumber {
-  font-size: 2.5rem; /* Giảm kích thước chữ */
+  font-size: 2.5rem; 
   font-weight: bold;
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   background-clip: text;
@@ -472,7 +472,7 @@
 }
 
 .footerBrand {
-  max-width: 400px; /* Giảm chiều rộng tối đa */
+  max-width: 400px; 
 }
 
 .footerLogo {
@@ -486,7 +486,7 @@
 
 .footerLinks {
   display: grid;
-  grid-template-columns: 1fr; /* Một cột trên điện thoại */
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
