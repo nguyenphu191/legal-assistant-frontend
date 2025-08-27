@@ -16,20 +16,38 @@ export interface Conversation {
   messages: Message[];
   createdAt: Date;
   updatedAt: Date;
-  preview: string; // First message or summary
+  preview: string;
   messageCount: number;
+  isFavorite?: boolean; // Thêm tính năng favorite
+  tags?: string[]; // Thêm tags
+}
+
+// Thêm interface cho statistics
+export interface ConversationStats {
+  total: number;
+  today: number;
+  thisWeek: number;
+  thisMonth: number;
+  avgMessagesPerConversation: number;
+  favoriteCount: number;
 }
 
 interface ConversationsContextType {
   conversations: Conversation[];
   activeConversationId: string | null;
   loading: boolean;
+  stats: ConversationStats;
   createConversation: (title?: string, firstMessage?: Message) => string;
   updateConversation: (id: string, messages: Message[]) => void;
+  updateConversationTitle: (id: string, newTitle: string) => void; // Thêm function edit title
   deleteConversation: (id: string) => void;
+  toggleFavorite: (id: string) => void; // Thêm function favorite
   getConversation: (id: string) => Conversation | undefined;
   setActiveConversation: (id: string | null) => void;
   searchConversations: (query: string) => Conversation[];
+  exportConversations: () => void; // Thêm export
+  importConversations: (data: string) => boolean; // Thêm import
+  bulkDeleteConversations: (ids: string[]) => void; // Thêm bulk delete
 }
 
 const ConversationsContext = createContext<ConversationsContextType | undefined>(undefined);
@@ -52,6 +70,77 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Calculate statistics
+  const calculateStats = (convs: Conversation[]): ConversationStats => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const todayCount = convs.filter(c => c.createdAt >= today).length;
+    const weekCount = convs.filter(c => c.createdAt >= thisWeek).length;
+    const monthCount = convs.filter(c => c.createdAt >= thisMonth).length;
+    const favoriteCount = convs.filter(c => c.isFavorite).length;
+    const avgMessages = convs.length > 0 
+      ? Math.round(convs.reduce((sum, c) => sum + c.messageCount, 0) / convs.length)
+      : 0;
+
+    return {
+      total: convs.length,
+      today: todayCount,
+      thisWeek: weekCount,
+      thisMonth: monthCount,
+      avgMessagesPerConversation: avgMessages,
+      favoriteCount
+    };
+  };
+
+  const stats = calculateStats(conversations);
+
+  // Storage key with user ID
+  const getStorageKey = () => {
+    return currentUser ? `conversations_${currentUser.uid}` : 'conversations_guest';
+  };
+
+  // Load conversations from localStorage
+  const loadConversations = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(getStorageKey());
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const conversationsWithDates = parsed.map((conv: any) => ({
+            ...conv,
+            createdAt: new Date(conv.createdAt),
+            updatedAt: new Date(conv.updatedAt),
+            messages: conv.messages.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }))
+          }));
+          return conversationsWithDates;
+        } catch (error) {
+          console.error('Error loading conversations:', error);
+        }
+      }
+    }
+    return [];
+  };
+
+  // Save conversations to localStorage
+  const saveConversations = (convs: Conversation[]) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(getStorageKey(), JSON.stringify(convs));
+    }
+  };
+
+  // Initialize conversations
+  useEffect(() => {
+    const loadedConversations = loadConversations();
+    setConversations(loadedConversations);
+    setLoading(false);
+  }, [currentUser]);
+
   // Generate conversation title from first message
   const generateTitle = (messages: Message[]): string => {
     const firstUserMessage = messages.find(m => m.type === 'user');
@@ -71,83 +160,41 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
         ? lastMessage.content.substring(0, 100) + '...'
         : lastMessage.content;
     }
-    return 'Chưa có tin nhắn';
+    return 'Cuộc trò chuyện trống';
   };
 
-  // Load conversations from localStorage
-  useEffect(() => {
-    const loadConversations = () => {
-      if (currentUser) {
-        try {
-          const storedConversations = localStorage.getItem(`conversations_${currentUser.uid}`);
-          if (storedConversations) {
-            const parsed = JSON.parse(storedConversations);
-            // Convert string dates back to Date objects
-            const conversationsWithDates = parsed.map((conv: any) => ({
-              ...conv,
-              createdAt: new Date(conv.createdAt),
-              updatedAt: new Date(conv.updatedAt),
-              messages: conv.messages.map((msg: any) => ({
-                ...msg,
-                timestamp: new Date(msg.timestamp)
-              }))
-            }));
-            setConversations(conversationsWithDates);
-          }
-        } catch (error) {
-          console.error('Error loading conversations:', error);
-        }
-      }
-      setLoading(false);
-    };
-
-    loadConversations();
-  }, [currentUser]);
-
-  // Save conversations to localStorage
-  const saveConversations = (updatedConversations: Conversation[]) => {
-    if (currentUser) {
-      try {
-        localStorage.setItem(
-          `conversations_${currentUser.uid}`,
-          JSON.stringify(updatedConversations)
-        );
-      } catch (error) {
-        console.error('Error saving conversations:', error);
-      }
-    }
-  };
-
+  // Create new conversation
   const createConversation = (title?: string, firstMessage?: Message): string => {
-    const id = Date.now().toString();
     const now = new Date();
-    const messages = firstMessage ? [firstMessage] : [];
+    const id = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     const newConversation: Conversation = {
       id,
-      title: title || (firstMessage ? generateTitle(messages) : `Cuộc trò chuyện mới`),
-      messages,
+      title: title || `Cuộc trò chuyện mới`,
+      messages: firstMessage ? [firstMessage] : [],
       createdAt: now,
       updatedAt: now,
-      preview: firstMessage ? generatePreview(messages) : 'Cuộc trò chuyện mới',
-      messageCount: messages.length
+      preview: firstMessage ? firstMessage.content.substring(0, 100) : 'Cuộc trò chuyện trống',
+      messageCount: firstMessage ? 1 : 0,
+      isFavorite: false,
+      tags: []
     };
 
     const updatedConversations = [newConversation, ...conversations];
     setConversations(updatedConversations);
     saveConversations(updatedConversations);
-    setActiveConversationId(id);
     
     return id;
   };
 
+  // Update conversation messages
   const updateConversation = (id: string, messages: Message[]) => {
     const updatedConversations = conversations.map(conv => {
       if (conv.id === id) {
         const updatedConv = {
           ...conv,
           messages,
-          title: messages.length > 0 && conv.title.includes('Cuộc trò chuyện') 
+          title: conv.title === 'Cuộc trò chuyện mới' && messages.length > 0 
             ? generateTitle(messages) 
             : conv.title,
           updatedAt: new Date(),
@@ -163,6 +210,33 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     saveConversations(updatedConversations);
   };
 
+  // Update conversation title
+  const updateConversationTitle = (id: string, newTitle: string) => {
+    const updatedConversations = conversations.map(conv => {
+      if (conv.id === id) {
+        return { ...conv, title: newTitle, updatedAt: new Date() };
+      }
+      return conv;
+    });
+
+    setConversations(updatedConversations);
+    saveConversations(updatedConversations);
+  };
+
+  // Toggle favorite status
+  const toggleFavorite = (id: string) => {
+    const updatedConversations = conversations.map(conv => {
+      if (conv.id === id) {
+        return { ...conv, isFavorite: !conv.isFavorite, updatedAt: new Date() };
+      }
+      return conv;
+    });
+
+    setConversations(updatedConversations);
+    saveConversations(updatedConversations);
+  };
+
+  // Delete conversation
   const deleteConversation = (id: string) => {
     const updatedConversations = conversations.filter(conv => conv.id !== id);
     setConversations(updatedConversations);
@@ -170,6 +244,73 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     
     if (activeConversationId === id) {
       setActiveConversationId(null);
+    }
+  };
+
+  // Bulk delete conversations
+  const bulkDeleteConversations = (ids: string[]) => {
+    const updatedConversations = conversations.filter(conv => !ids.includes(conv.id));
+    setConversations(updatedConversations);
+    saveConversations(updatedConversations);
+    
+    if (activeConversationId && ids.includes(activeConversationId)) {
+      setActiveConversationId(null);
+    }
+  };
+
+  // Export conversations
+  const exportConversations = () => {
+    const dataStr = JSON.stringify(conversations, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `conversations_export_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Import conversations
+  const importConversations = (data: string): boolean => {
+    try {
+      const importedData = JSON.parse(data);
+      if (!Array.isArray(importedData)) {
+        throw new Error('Invalid format');
+      }
+
+      // Validate structure
+      const validConversations = importedData.filter(conv => 
+        conv.id && conv.title && Array.isArray(conv.messages)
+      );
+
+      if (validConversations.length === 0) {
+        throw new Error('No valid conversations found');
+      }
+
+      // Convert dates and merge with existing
+      const conversationsWithDates = validConversations.map((conv: any) => ({
+        ...conv,
+        createdAt: new Date(conv.createdAt),
+        updatedAt: new Date(conv.updatedAt),
+        isFavorite: conv.isFavorite || false,
+        tags: conv.tags || [],
+        messages: conv.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))
+      }));
+
+      const mergedConversations = [...conversations, ...conversationsWithDates];
+      setConversations(mergedConversations);
+      saveConversations(mergedConversations);
+
+      return true;
+    } catch (error) {
+      console.error('Error importing conversations:', error);
+      return false;
     }
   };
 
@@ -188,7 +329,8 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     return conversations.filter(conv => 
       conv.title.toLowerCase().includes(lowerQuery) ||
       conv.preview.toLowerCase().includes(lowerQuery) ||
-      conv.messages.some(msg => msg.content.toLowerCase().includes(lowerQuery))
+      conv.messages.some(msg => msg.content.toLowerCase().includes(lowerQuery)) ||
+      conv.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
     );
   };
 
@@ -196,12 +338,18 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     conversations,
     activeConversationId,
     loading,
+    stats,
     createConversation,
     updateConversation,
+    updateConversationTitle,
+    toggleFavorite,
     deleteConversation,
+    bulkDeleteConversations,
     getConversation,
     setActiveConversation,
-    searchConversations
+    searchConversations,
+    exportConversations,
+    importConversations
   };
 
   return (

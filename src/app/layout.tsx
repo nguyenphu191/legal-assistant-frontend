@@ -1,8 +1,9 @@
-import './globals.css'
-import { Inter } from 'next/font/google'
-import { AuthProvider } from '@/contexts/AuthContext'
+import './globals.css';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ConversationsProvider } from '@/contexts/ConversationsContext';
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'AI Tra cứu Luật',
@@ -10,12 +11,12 @@ export const metadata = {
   keywords: 'AI, pháp luật, tra cứu, luật, văn bản pháp luật',
   authors: [{ name: 'VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII' }],
   viewport: 'width=device-width, initial-scale=1',
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="vi">
@@ -25,9 +26,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          {children}
+          <ConversationsProvider>
+            {children}
+          </ConversationsProvider>
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

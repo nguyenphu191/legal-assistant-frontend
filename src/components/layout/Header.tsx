@@ -50,9 +50,9 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         
         <Link href="/" className={styles.logo}>
           <div className={styles.logoIcon}>
-            <span>AI</span>
+            <img src="/logo.png" alt="Logo" className={styles.logoImage} />
           </div>
-          <span className={styles.logoText}>AI Tra cứu Luật</span>
+          <span className={styles.logoText}>Legal Assistant</span>
         </Link>
       </div>
 

@@ -1,3 +1,4 @@
+/* Base styles */
 .menuOverlay {
   position: fixed;
   top: 0;
@@ -15,6 +16,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .conversationItem:hover {
@@ -23,6 +26,26 @@
   transform: translateY(-2px);
 }
 
+.conversationItem.selected {
+  border-color: var(--primary-blue);
+  background: #ecfeff;
+}
+
+/* Selection area */
+.selectionArea {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 5;
+}
+
+.selectionCheckbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--primary-blue);
+}
+
+/* Item header */
 .itemHeader {
   display: flex;
   align-items: flex-start;
@@ -39,6 +62,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 
 .conversationIcon {
@@ -47,6 +71,27 @@
   color: var(--primary-blue);
 }
 
+.favoriteIndicator {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1rem;
+  height: 1rem;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.favoriteIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: #ec4899;
+}
+
+/* Item info */
 .itemInfo {
   flex: 1;
   min-width: 0;
@@ -74,6 +119,69 @@
   overflow: hidden;
 }
 
+/* Edit title */
+.editTitleContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.editTitleInput {
+  flex: 1;
+  padding: 0.5rem;
+  border: 2px solid var(--primary-blue);
+  border-radius: var(--radius-md);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  background: white;
+}
+
+.editActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.editAction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editAction svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.saveAction {
+  background: #10b981;
+  color: white;
+}
+
+.saveAction:hover {
+  background: #059669;
+}
+
+.cancelAction {
+  background: #ef4444;
+  color: white;
+}
+
+.cancelAction:hover {
+  background: #dc2626;
+}
+
+/* Item actions */
 .itemActions {
   position: relative;
 }
@@ -107,7 +215,7 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   z-index: 20;
-  min-width: 140px;
+  min-width: 160px;
   padding: 0.5rem;
   animation: slideDown 0.2s ease-out;
 }
@@ -143,12 +251,14 @@
 .menuOption svg {
   width: 1rem;
   height: 1rem;
+  flex-shrink: 0;
 }
 
+/* Item footer */
 .itemFooter {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .itemMeta {
@@ -178,6 +288,32 @@
   height: 0.875rem;
 }
 
+/* Tags */
+.tagsContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: #f0f9ff;
+  color: #0369a1;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.moreTagsIndicator {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Animations */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -186,5 +322,43 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .conversationItem {
+    padding: 1rem;
+  }
+  
+  .itemHeader {
+    gap: 0.75rem;
+  }
+  
+  .iconWrapper {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .conversationIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .conversationTitle {
+    font-size: 1rem;
+  }
+  
+  .conversationPreview {
+    font-size: 0.8125rem;
+  }
+  
+  .editTitleInput {
+    font-size: 1rem;
+  }
+  
+  .editAction {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 }

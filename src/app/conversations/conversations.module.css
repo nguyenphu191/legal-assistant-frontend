@@ -19,6 +19,12 @@
   padding: 2rem;
 }
 
+/* Stats section */
+.statsSection {
+  margin-bottom: 2rem;
+}
+
+/* Page header */
 .pageHeader {
   display: flex;
   align-items: center;
@@ -42,6 +48,37 @@
 .pageDescription {
   color: var(--text-secondary);
   font-size: 1rem;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.bulkModeButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.bulkModeButton:hover,
+.bulkModeButton.active {
+  border-color: var(--primary-blue);
+  background: #ecfeff;
+  color: var(--primary-blue);
+  transform: translateY(-1px);
 }
 
 .newConversationButton {
@@ -70,6 +107,7 @@
   height: 1.125rem;
 }
 
+/* Search section */
 .searchSection {
   margin-bottom: 2rem;
 }
@@ -79,11 +117,13 @@
   gap: 1rem;
   align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .searchInputWrapper {
   position: relative;
   flex: 1;
+  min-width: 300px;
   max-width: 500px;
 }
 
@@ -161,12 +201,48 @@
   height: 1rem;
 }
 
+/* View mode toggle */
+.viewModeToggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: white;
+  overflow: hidden;
+}
+
+.viewModeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: white;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewModeButton:hover,
+.viewModeButton.active {
+  background: #ecfeff;
+  color: var(--primary-blue);
+}
+
+.viewModeButton svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Filters panel */
 .filtersPanel {
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   animation: slideDown 0.2s ease-out;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .filterGroup {
@@ -189,12 +265,14 @@
   font-size: 0.875rem;
   outline: none;
   transition: border-color 0.2s ease;
+  min-width: 120px;
 }
 
 .filterSelect:focus {
   border-color: var(--primary-blue);
 }
 
+/* Conversations list */
 .conversationsList {
   flex: 1;
   overflow-y: auto;
@@ -245,6 +323,7 @@
 .emptyState p {
   color: var(--text-secondary);
   margin-bottom: 2rem;
+  max-width: 400px;
 }
 
 .startChatButton {
@@ -280,24 +359,32 @@
   font-size: 0.875rem;
 }
 
+/* Conversations grid */
 .conversationsGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
 }
 
+.conversationsGrid.listView {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 @media (min-width: 768px) {
-  .conversationsGrid {
+  .conversationsGrid:not(.listView) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1200px) {
-  .conversationsGrid {
+  .conversationsGrid:not(.listView) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
+/* Animations */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -312,5 +399,60 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 1rem;
+  }
+  
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .titleSection {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+  
+  .headerActions {
+    justify-content: center;
+  }
+  
+  .searchContainer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchInputWrapper {
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .filtersPanel {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .filterGroup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .filterSelect {
+    min-width: auto;
+  }
+  
+  .viewModeToggle {
+    align-self: center;
   }
 }

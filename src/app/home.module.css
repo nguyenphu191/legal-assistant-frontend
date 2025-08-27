@@ -6,7 +6,7 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
 }
 
 /* Header */
@@ -22,22 +22,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4rem;
+  height: 3.5rem;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   text-decoration: none;
   color: var(--text-primary);
 }
 
+.logoImage {
+  width: 3rem; 
+  height: 3rem;
+  object-fit: cover;
+}
+
 .logoIcon {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-  border-radius: 0.5rem;
+  width: 4rem;
+  height: 4rem;
+  background: white;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,18 +52,29 @@
 .logoIcon span {
   color: white;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 0.875rem; 
 }
 
 .logoText {
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1rem; 
 }
 
 .nav {
+  display: none; /* Ẩn nav trên màn hình nhỏ */
+}
+
+.nav.active {
   display: flex;
-  align-items: center;
-  gap: 2rem;
+  flex-direction: column;
+  gap: 1rem;
+  position: absolute;
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .nav a {
@@ -72,7 +89,7 @@
 }
 
 .loginButton {
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   color: white !important;
   border-radius: 0.5rem;
@@ -85,15 +102,33 @@
   transform: translateY(-1px);
 }
 
+@media (min-width: 768px) {
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .header .container {
+    height: 4rem;
+  }
+  .logoImage {
+    width: 4rem;
+    height: 4rem;
+  }
+  .logoText {
+    font-size: 1.125rem;
+  }
+}
+
 /* Hero Section */
 .hero {
-  padding: 6rem 0;
+  padding: 4rem 0; 
 }
 
 .hero .container {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 4rem;
+  gap: 2rem;
   align-items: center;
 }
 
@@ -114,14 +149,20 @@
 }
 
 .heroTitle {
-  font-size: 3rem;
+  font-size: 2rem; 
   font-weight: bold;
-  line-height: 1.1;
-  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
   color: var(--text-primary);
 }
 
 @media (min-width: 768px) {
+  .heroTitle {
+    font-size: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
   .heroTitle {
     font-size: 4rem;
   }
@@ -135,16 +176,16 @@
 }
 
 .heroDescription {
-  font-size: 1.25rem;
+  font-size: 1rem; 
   color: var(--text-secondary);
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .heroActions {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
@@ -165,12 +206,12 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 2rem;
+  padding: 0.5rem 1.5rem; 
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   color: white;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1rem;
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -181,18 +222,18 @@
 }
 
 .ctaButton svg {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 .secondaryButton {
-  padding: 0.75rem 2rem;
+  padding: 0.5rem 1.5rem;
   background: white;
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 1.125rem;
+  font-size: 1rem;
   text-decoration: none;
   transition: all 0.2s ease;
 }
@@ -208,91 +249,52 @@
   align-items: center;
 }
 
-.chatPreview {
-  width: 100%;
-  max-width: 400px;
-  background: white;
-  border-radius: 1rem;
-  box-shadow: var(--shadow-lg);
-  overflow: hidden;
+.bannerdoc {
+  max-width: 70%; 
+  height: auto;
 }
 
-.chatHeader {
+.bannerHorizontal {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.chatAvatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: bold;
+  overflow: hidden;
+ margin-left: clamp(1rem, 5vw, 20rem);
+ margin-right: clamp(1rem, 5vw, 20rem);
 }
 
-.chatName {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.chatStatus {
-  font-size: 0.875rem;
-  color: #10b981;
-}
-
-.chatMessages {
-  padding: 1rem;
-}
-
-.chatMessage {
-  display: flex;
-  margin-bottom: 1rem;
-}
-
-.messageContent {
-  background: #ecfeff;
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  border-bottom-left-radius: 0.25rem;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  line-height: 1.5;
+.bannerHorizontalImage {
+  width: 100%; 
+  height: auto;
+  object-fit: cover;
 }
 
 /* Features Section */
 .features {
-  padding: 6rem 0;
+  padding: 4rem 0;
   background: white;
 }
 
 .sectionHeader {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .sectionHeader h2 {
-  font-size: 2.5rem;
+  font-size: 2rem; /* Giảm kích thước chữ */
   font-weight: bold;
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .sectionHeader p {
-  font-size: 1.25rem;
+  font-size: 1rem;
   color: var(--text-secondary);
 }
 
 .featuresGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 @media (min-width: 640px) {
@@ -308,9 +310,9 @@
 }
 
 .featureCard {
-  padding: 2rem;
+  padding: 1.5rem;
   background: var(--background);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   border: 1px solid var(--border);
   text-decoration: none;
   transition: all 0.2s ease;
@@ -324,43 +326,44 @@
 }
 
 .featureIcon {
-  width: 4rem;
-  height: 4rem;
+  width: 3.5rem;
+  height: 3.5rem;
   background: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1rem;
 }
 
 .featureIcon svg {
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   color: var(--primary-blue);
 }
 
 .featureTitle {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .featureDescription {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.875rem; /* Giảm kích thước chữ */
 }
 
 /* Benefits Section */
 .benefits {
-  padding: 6rem 0;
+  padding: 4rem 0;
 }
 
 .benefitsContent {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 4rem;
+  gap: 2rem;
   align-items: center;
 }
 
@@ -371,28 +374,28 @@
 }
 
 .benefitsText h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: bold;
   color: var(--text-primary);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .benefitsList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .benefitItem {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .checkIcon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   color: #10b981;
   flex-shrink: 0;
 }
@@ -400,10 +403,10 @@
 .benefitsButton {
   display: inline-flex;
   align-items: center;
-  padding: 0.75rem 2rem;
+  padding: 0.5rem 1.5rem;
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   color: white;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
@@ -422,10 +425,10 @@
 .statsCard {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  padding: 2rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
   background: white;
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   box-shadow: var(--shadow-lg);
 }
 
@@ -434,7 +437,7 @@
 }
 
 .statNumber {
-  font-size: 3rem;
+  font-size: 2.5rem; /* Giảm kích thước chữ */
   font-weight: bold;
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   background-clip: text;
@@ -445,20 +448,21 @@
 .statLabel {
   color: var(--text-secondary);
   font-weight: 500;
+  font-size: 0.875rem;
 }
 
 /* Footer */
 .footer {
   background: var(--text-primary);
   color: white;
-  padding: 3rem 0 1rem;
+  padding: 2rem 0 1rem;
 }
 
 .footerContent {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 @media (min-width: 768px) {
@@ -468,27 +472,34 @@
 }
 
 .footerBrand {
-  max-width: 300px;
+  max-width: 400px; /* Giảm chiều rộng tối đa */
 }
 
 .footerLogo {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 
 .footerLinks {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
+  grid-template-columns: 1fr; /* Một cột trên điện thoại */
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .footerLinks {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .footerColumn h4 {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   font-weight: 600;
+  font-size: 1rem;
 }
 
 .footerColumn a {
@@ -505,8 +516,8 @@
 
 .footerBottom {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   text-align: center;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }

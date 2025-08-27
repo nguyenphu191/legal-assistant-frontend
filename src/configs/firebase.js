@@ -11,16 +11,17 @@ const firebaseConfig = {
   appId: "1:564284504937:web:fb3d403537fdae84051bf8",
   measurementId: "G-W1RR2ZMNN7"
 };
-// Initialize Firebase
+
+// Khởi tạo Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication
+// Khởi tạo Firebase Authentication (xác thực người dùng)
 export const auth = getAuth(app);
 
-// Initialize Firestore
+// Khởi tạo Firestore (cơ sở dữ liệu của Firebase)
 export const db = getFirestore(app);
 
-// Providers
+// Cấu hình nhà cung cấp dịch vụ đăng nhập
 export const googleProvider = new GoogleAuthProvider();
 export const facebookProvider = new FacebookAuthProvider();
 

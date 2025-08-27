@@ -1,5 +1,5 @@
 .header {
-  height: 4rem;
+  height: 6rem;
   background: white;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -69,10 +69,22 @@
   font-weight: bold;
   font-size: 1rem;
 }
-
+.logoImage{
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: clamp(0.5rem, 2vw, 1rem);
+}
 .logoText {
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-weight: 700;
+  font-size: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 @media (max-width: 640px) {
@@ -106,8 +118,8 @@
 }
 
 .avatar {
-  width: 2rem;
-  height: 2rem;
+  width: 3rem;
+  height: 3rem;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -206,7 +218,7 @@
   border: none;
   border-radius: 0.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
