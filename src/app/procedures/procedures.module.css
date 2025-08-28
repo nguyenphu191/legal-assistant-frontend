@@ -1,114 +1,155 @@
 .proceduresContainer {
-  height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--background);
+  min-height: 100vh; /* Đảm bảo container ít nhất bằng viewport, nhưng có thể mở rộng */
+  background-color: var(--background, #f8fafc);
 }
 
 .proceduresLayout {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: hidden; /* Giữ nguyên để tránh cuộn toàn layout */
 }
 
 .mainContent {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Đổi từ center để nội dung không bị ép xuống giữa */
   justify-content: center;
   padding: 2rem;
+  overflow-y: auto; /* Cho phép cuộn theo chiều dọc khi nội dung vượt quá */
+  max-height: calc(100vh - 64px); /* Trừ chiều cao của Header (giả sử 64px), điều chỉnh nếu khác */
 }
 
-.comingSoon {
+.proceduresContent {
   text-align: center;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
-}
-
-.icon {
-  width: 8rem;
-  height: 8rem;
-  background: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 100%);
-  border-radius: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 2rem;
-}
-
-.icon svg {
-  width: 4rem;
-  height: 4rem;
-  color: var(--primary-blue);
+  width: 100%;
 }
 
 .title {
   font-size: 2.5rem;
   font-weight: bold;
-  color: var(--text-primary);
+  color: var(--text-primary, #0f172a);
   margin-bottom: 1rem;
 }
 
 .description {
   font-size: 1.25rem;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #64748b);
   margin-bottom: 3rem;
   line-height: 1.6;
 }
 
-.features {
-  margin-bottom: 3rem;
-}
-
-.featuresTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2rem;
-}
-
-.featuresList {
-  display: grid;
-  gap: 1rem;
+.proceduresList {
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-@media (min-width: 640px) {
-  .featuresList {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.accordionItem {
+  background: white;
+  border-radius: var(--radius-lg, 0.75rem);
+  border: 1px solid var(--border, #e5e7eb);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.feature {
+.accordionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  background: var(--background, #f8fafc);
+}
+
+.accordionIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--text-secondary, #64748b);
+  transition: transform 0.3s ease;
+}
+
+.accordionIcon.rotate {
+  transform: rotate(180deg);
+}
+
+.accordionContent {
+  padding: 1.5rem;
+  background: white;
+}
+
+.procedureDescription {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.subTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 1rem;
+}
+
+.stepsList {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.stepsList li {
+  margin-bottom: 0.5rem;
+}
+
+.documentsList {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.documentsList li {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem;
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary, #64748b);
 }
 
-.featureIcon {
+.documentIcon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #10b981;
-  flex-shrink: 0;
+  color: var(--primary-blue, #0891b2);
 }
 
-.notifyButton {
-  padding: 1rem 2rem;
+.processingTime {
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.referenceLink {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
   background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
   color: white;
-  border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 0.75rem);
+  text-decoration: none;
   font-weight: 600;
-  font-size: 1.125rem;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.notifyButton:hover {
+.referenceLink:hover {
   background: linear-gradient(135deg, #0e7490 0%, #0f766e 100%);
   transform: translateY(-2px);
+}
+
+@media (min-width: 640px) {
+  .proceduresContent {
+    max-width: 1000px;
+  }
 }

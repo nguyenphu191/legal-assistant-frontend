@@ -139,11 +139,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className={styles.sidebarFooter}>
             <div className={styles.footerContent}>
               <div className={styles.hotline}>
-                <strong>Hotline: 19005001</strong>
+                <strong>Hotline: 19008889</strong>
               </div>
               <div className={styles.company}>
                 Phát triển bởi<br />
-                <strong>VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII</strong>
+                <strong>HMP Ptit team - Nhóm đồ án Học viện Công nghệ Bưu chính viễn thông</strong>
               </div>
             </div>
           </div>

@@ -6,7 +6,6 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { buildCloudinaryUrl, forceRefreshCloudinaryUrl } from '@/utils/cloudinary';
 import {
   UserCircleIcon,
   CameraIcon,
@@ -31,12 +30,9 @@ export default function ProfilePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     displayName: '',
@@ -44,7 +40,6 @@ export default function ProfilePage() {
     email: ''
   });
 
-  // ✨ IMPROVED: Đồng bộ formData khi currentUser thay đổi
   useEffect(() => {
     if (currentUser) {
       setFormData({
@@ -54,15 +49,6 @@ export default function ProfilePage() {
       });
     }
   }, [currentUser]);
-
-  // ✨ IMPROVED: Clean up preview URL khi component unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -79,18 +65,6 @@ export default function ProfilePage() {
     fileInputRef.current?.click();
   };
 
-  // ✨ IMPROVED: Clear preview URL properly
-  const clearPreview = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl('');
-    }
-    setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -101,9 +75,6 @@ export default function ProfilePage() {
       type: file.type,
       lastModified: new Date(file.lastModified).toISOString()
     });
-
-    // ✨ CLEAR PREVIOUS PREVIEW
-    clearPreview();
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -118,37 +89,19 @@ export default function ProfilePage() {
       return;
     }
 
-    // ✨ IMPROVED: Create preview URL và lưu file reference
-    const filePreviewUrl = URL.createObjectURL(file);
-    setPreviewUrl(filePreviewUrl);
-    setSelectedFile(file);
-
     setUploading(true);
-    setUploadProgress(0);
     setError('');
     setSuccess('');
     
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) return prev;
-        return prev + Math.random() * 10;
-      });
-    }, 200);
-
     try {
       console.log('🚀 Starting upload for user:', currentUser?.uid);
       
-      // ✨ UPLOAD AVATAR VỚI IMPROVED ERROR HANDLING
       await updateUserProfile({ avatar: file });
       
-      setUploadProgress(100);
       setSuccess('🎉 Cập nhật avatar thành công!');
       console.log('✅ Upload completed successfully');
       
-      // ✨ CLEAR PREVIEW AFTER SUCCESS
       setTimeout(() => {
-        clearPreview();
         setSuccess('');
       }, 2000);
 
@@ -173,16 +126,12 @@ export default function ProfilePage() {
       }
       
       setError(errorMessage);
-      setUploadProgress(0);
-      
-      // ✨ CLEAR PREVIEW ON ERROR
-      setTimeout(() => {
-        clearPreview();
-      }, 1000);
       
     } finally {
-      clearInterval(progressInterval);
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -265,23 +214,6 @@ export default function ProfilePage() {
     }
   };
 
-  // ✨ IMPROVED: Get optimized avatar URL với force refresh
-  const getOptimizedAvatarUrl = (url: string) => {
-    if (!url) return '';
-    
-    // Force refresh nếu không có preview
-    const refreshedUrl = previewUrl ? url : forceRefreshCloudinaryUrl(url);
-    
-    return buildCloudinaryUrl(refreshedUrl, {
-      width: 400,
-      height: 400,
-      crop: 'fill',
-      gravity: 'face',
-      quality: 'auto',
-      format: 'auto'
-    });
-  };
-
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -294,10 +226,6 @@ export default function ProfilePage() {
   if (!currentUser) {
     return null;
   }
-
-  // ✨ IMPROVED: Avatar URL logic
-  const currentAvatarUrl = currentUser.photoURL || '';
-  const optimizedAvatarUrl = getOptimizedAvatarUrl(currentAvatarUrl);
 
   return (
     <ProtectedRoute>
@@ -344,58 +272,37 @@ export default function ProfilePage() {
               )}
 
               <div className={styles.profileCard}>
-                {/* ✨ IMPROVED: Avatar Section */}
                 <div className={styles.avatarSection}>
                   <div 
                     className={`${styles.avatarContainer} ${uploading ? styles.uploading : ''}`}
                     onClick={handleAvatarClick}
                   >
-                    {previewUrl ? (
-                      // ✨ PREVIEW ẢNH MỚI
+                    {currentUser.photoURL ? (
                       <img 
-                        src={previewUrl}
-                        alt="Preview" 
-                        className={styles.avatar}
-                        style={{ opacity: uploading ? 0.7 : 1 }}
-                      />
-                    ) : optimizedAvatarUrl ? (
-                      // ✨ ẢNH HIỆN TẠI TỪ CLOUDINARY
-                      <img 
-                        src={optimizedAvatarUrl}
+                        src={currentUser.photoURL}
                         alt="Avatar" 
                         className={styles.avatar}
-                        key={currentAvatarUrl} // ✨ FORCE RE-RENDER KHI URL THAY ĐỔI
+                        style={{ opacity: uploading ? 0.7 : 1 }}
+                        key={currentUser.photoURL}
                         onError={(e) => {
                           console.error('Avatar load error:', e);
                           e.currentTarget.style.display = 'none';
                         }}
                       />
                     ) : (
-                      // Default icon
                       <UserCircleIcon className={styles.defaultAvatar} />
                     )}
                     
                     <div className={styles.avatarOverlay}>
                       {uploading ? (
                         <div className={styles.uploadProgress}>
-                          <div className={styles.progressCircle}>
-                            <div 
-                              className={styles.progressFill}
-                              style={{ 
-                                background: `conic-gradient(#ffffff ${uploadProgress * 3.6}deg, transparent 0deg)`
-                              }}
-                            ></div>
-                            <span className={styles.progressText}>
-                              {Math.round(uploadProgress)}%
-                            </span>
-                          </div>
+                          <div className={styles.spinner}></div>
+                          <span className={styles.progressText}>Đang tải...</span>
                         </div>
                       ) : (
                         <>
                           <CameraIcon className={styles.cameraIcon} />
-                          <span className={styles.avatarText}>
-                            {previewUrl ? 'Đang tải...' : 'Đổi ảnh'}
-                          </span>
+                          <span className={styles.avatarText}>Đổi ảnh</span>
                         </>
                       )}
                     </div>
@@ -419,7 +326,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-
+              
                 {/* User Information */}
                 <div className={styles.userInfoSection}>
                   <div className={styles.sectionHeader}>

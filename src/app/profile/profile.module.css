@@ -1,8 +1,65 @@
+/* CSS Variables for reusability */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-dark: #1f2937;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-primary: #0891b2;
+  --accent-hover: #0e7490;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #16a34a;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #dc2626;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode styles applied to local classes */
+.darkMode .pageContainer {
+  background: var(--bg-dark);
+}
+
+.darkMode .profileCard {
+  background: #2d3748;
+}
+
+.darkMode .pageTitle,
+.darkMode .fieldLabel,
+.darkMode .statValue,
+.darkMode .fieldValue {
+  color: #f3f4f6;
+}
+
+.darkMode .pageDescription,
+.darkMode .statLabel {
+  color: #9ca3af;
+}
+
+.darkMode .profileCard {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+}
+
+.darkMode .fieldInput {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.darkMode .actionButtons {
+  border-top-color: #4b5563;
+}
+
+.darkMode .statsSection {
+  border-top-color: #4b5563;
+}
 
 /* Page Layout */
 .pageContainer {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-primary);
+  transition: background 0.3s var(--transition-easing);
 }
 
 .mainContent {
@@ -12,14 +69,15 @@
 
 .content {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   margin-left: 0;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s var(--transition-easing);
 }
 
 @media (min-width: 1024px) {
   .content {
     margin-left: 16rem;
+    padding: 2rem;
   }
 }
 
@@ -36,41 +94,39 @@
 .pageTitle {
   font-size: 2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
 }
 
 .pageDescription {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 1.125rem;
   margin: 0;
 }
 
 /* Alert Messages */
-.alertError {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  border-radius: 0.75rem;
-  font-weight: 500;
-}
-
+.alertError,
 .alertSuccess {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
   border-radius: 0.75rem;
   font-weight: 500;
+  transition: opacity 0.3s var(--transition-easing);
+}
+
+.alertError {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.alertSuccess {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
 }
 
 .alertIcon {
@@ -87,7 +143,7 @@
   cursor: pointer;
   color: inherit;
   border-radius: 0.375rem;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s var(--transition-easing);
 }
 
 .alertCloseButton:hover {
@@ -103,13 +159,14 @@
 .profileCard {
   background: white;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
+  transition: box-shadow 0.3s var(--transition-easing);
 }
 
-/* Avatar Section - INCREASED SIZE */
+/* Avatar Section */
 .avatarSection {
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #14b8a6 100%);
   padding: 3rem 2rem;
   text-align: center;
   color: white;
@@ -118,14 +175,14 @@
 
 .avatarContainer {
   position: relative;
-  width: 12rem; /* Increased from 8rem to 12rem (192px) */
-  height: 12rem; /* Increased from 8rem to 12rem (192px) */
-  margin: 0 auto 2rem; /* Increased bottom margin */
+  width: 12rem;
+  height: 12rem;
+  margin: 0 auto 2rem;
   cursor: pointer;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  border: 4px solid white;
+  transition: all 0.3s var(--transition-easing);
 }
 
 .avatarContainer:hover {
@@ -153,7 +210,7 @@
   width: 100%;
   height: 100%;
   color: rgba(255, 255, 255, 0.7);
-  padding: 1rem; /* Added padding for better spacing */
+  padding: 1rem;
 }
 
 .avatarOverlay {
@@ -168,7 +225,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s var(--transition-easing);
   border-radius: 50%;
 }
 
@@ -182,13 +239,13 @@
 }
 
 .cameraIcon {
-  width: 2.5rem; /* Increased from 2rem to 2.5rem */
-  height: 2.5rem; /* Increased from 2rem to 2.5rem */
+  width: 2.5rem;
+  height: 2.5rem;
   margin-bottom: 0.5rem;
 }
 
 .avatarText {
-  font-size: 1rem; /* Increased from 0.875rem */
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -201,8 +258,8 @@
 
 .progressCircle {
   position: relative;
-  width: 4rem; /* Increased from 3rem */
-  height: 4rem; /* Increased from 3rem */
+  width: 4rem;
+  height: 4rem;
   border-radius: 50%;
   background: conic-gradient(#ffffff 0deg, transparent 0deg);
   display: flex;
@@ -222,7 +279,7 @@
 }
 
 .progressText {
-  font-size: 1rem; /* Increased font size */
+  font-size: 1rem;
   font-weight: 600;
   color: white;
   z-index: 10;
@@ -236,65 +293,84 @@
   text-align: center;
 }
 
-.userName {
-  font-size: 2rem; /* Increased from 1.875rem */
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.userRole {
-  font-size: 1.125rem; /* Increased from 1rem */
-  opacity: 0.9;
-  font-weight: 500;
-  margin: 0;
-}
-
-/* Form Section */
-.formSection {
+.userInfoSection {
   padding: 2rem;
 }
 
-.formGrid {
-  display: grid;
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.infoFields {
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
-.formGroup {
+.fieldGroup {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.formLabel {
+.fieldLabel {
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.025em;
 }
 
-.formInput {
+.fieldInput {
   padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 1rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--transition-easing);
   background: white;
 }
 
-.formInput:focus {
+.fieldInput:focus {
   outline: none;
-  border-color: #0891b2;
+  border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
 }
 
-.formInput:disabled {
+.fieldInput:disabled {
   background: #f9fafb;
   color: #9ca3af;
   cursor: not-allowed;
 }
 
-.formActions {
+.fieldValue {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.verifiedBadge,
+.unverifiedBadge {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.verifiedBadge {
+  color: var(--success-text);
+}
+
+.unverifiedBadge {
+  color: var(--error-text);
+}
+
+.actionButtons {
   display: flex;
   gap: 1rem;
   padding-top: 1.5rem;
@@ -302,24 +378,28 @@
 }
 
 /* Buttons */
-.editButton {
+.editButton,
+.saveButton,
+.cancelButton {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #0891b2;
-  color: white;
   border: none;
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
+  transition: all 0.2s var(--transition-easing);
   font-size: 0.875rem;
 }
 
+.editButton {
+  background: var(--accent-primary);
+  color: white;
+}
+
 .editButton:hover {
-  background: #0e7490;
+  background: var(--accent-hover);
   transform: translateY(-1px);
 }
 
@@ -330,18 +410,8 @@
 }
 
 .saveButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
   background: #059669;
   color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
 }
 
 .saveButton:hover {
@@ -356,18 +426,8 @@
 }
 
 .cancelButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
   background: #6b7280;
   color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
 }
 
 .cancelButton:hover {
@@ -375,39 +435,45 @@
   transform: translateY(-1px);
 }
 
+.cancelButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .buttonIcon {
   width: 1rem;
   height: 1rem;
 }
 
-/* Additional Info Section */
-.additionalInfo {
+/* Account Statistics */
+.statsSection {
   padding: 2rem;
   border-top: 1px solid #e5e7eb;
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
-.infoGrid {
+.statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
 }
 
-.infoItem {
+.statCard {
   text-align: center;
 }
 
-.infoLabel {
+.statLabel {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 0.25rem;
 }
 
-.infoValue {
+.statValue {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text-primary);
 }
 
 /* Loading States */
@@ -417,16 +483,16 @@
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  color: #6b7280;
+  color: var(--text-secondary);
 }
 
 .spinner {
   width: 3rem;
   height: 3rem;
   border: 3px solid #e5e7eb;
-  border-top: 3px solid #0891b2;
+  border-top: 3px solid var(--accent-primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 1s var(--transition-easing) infinite;
   margin-bottom: 1rem;
 }
 
@@ -442,7 +508,7 @@
   }
   
   .avatarContainer {
-    width: 10rem; /* Reduced on mobile but still larger than original */
+    width: 10rem;
     height: 10rem;
   }
   
@@ -454,7 +520,7 @@
     font-size: 1rem;
   }
   
-  .formActions {
+  .actionButtons {
     flex-direction: column;
   }
   

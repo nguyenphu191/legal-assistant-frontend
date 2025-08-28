@@ -162,7 +162,7 @@ export default function ChatPage() {
                       <div className={styles.messageContent}>
                         {message.type === 'assistant' && (
                           <div className={styles.assistantAvatar}>
-                            <span>AI</span>
+                            <img src="/logo.png" alt="AI" className={styles.avatarImage} />
                           </div>
                         )}
                         <div className={styles.messageText}>
