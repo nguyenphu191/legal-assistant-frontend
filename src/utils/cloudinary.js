@@ -1,5 +1,4 @@
-// src/utils/cloudinary.js - FIXED VERSION với cache busting
-// Version với cache busting để fix lỗi avatar cũ
+
 
 /**
  * Upload ảnh lên Cloudinary với cache busting
