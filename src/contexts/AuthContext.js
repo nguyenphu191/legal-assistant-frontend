@@ -1,5 +1,3 @@
-// src/contexts/AuthContext.js - FIXED COMPATIBILITY VERSION
-
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -13,11 +11,10 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, facebookProvider } from '../configs/firebase';
-import { uploadToCloudinary, validateImageFile } from '../utils/cloudinary';
+import { uploadToCloudinary, validateImageFile, forceRefreshCloudinaryUrl } from '../utils/cloudinary';
 
 const AuthContext = createContext();
 
-// Hook tùy chỉnh để sử dụng ngữ cảnh xác thực
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -27,8 +24,8 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null); // Combined Firebase Auth + Firestore data
-  const [userProfile, setUserProfile] = useState(null); // Keep for backward compatibility
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Tạo tài liệu người dùng trong Firestore
@@ -38,7 +35,6 @@ export function AuthProvider({ children }) {
     const userRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userRef);
     
-    // Nếu người dùng chưa tồn tại trong Firestore thì tạo mới
     if (!userDoc.exists()) {
       const { displayName, email, photoURL } = user;
       const createdAt = new Date();
@@ -51,23 +47,22 @@ export function AuthProvider({ children }) {
           role: 'user',
           company: additionalData.company || '',
           createdAt,
-          updatedAt: createdAt,
           ...additionalData
         };
         
         await setDoc(userRef, userData);
+        setUserProfile(userData);
+        
         console.log('✅ Created user document in Firestore:', user.uid);
-        return userData;
       } catch (error) {
         console.error('❌ Lỗi khi tạo tài liệu người dùng:', error);
-        throw error;
       }
     }
     
-    return userDoc.data();
+    return userRef;
   };
 
-  // Lấy user profile từ Firestore và merge với Firebase Auth data
+  // Lấy user profile từ Firestore
   const getUserProfile = async (user) => {
     if (!user) return null;
     
@@ -76,107 +71,67 @@ export function AuthProvider({ children }) {
       const userDoc = await getDoc(userRef);
       
       if (userDoc.exists()) {
-        const firestoreData = userDoc.data();
-        
-        // Merge Firebase Auth data với Firestore data
-        const combinedUser = {
-          // Firebase Auth properties (keep methods)
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || firestoreData.displayName || '',
-          photoURL: user.photoURL || firestoreData.photoURL || '',
-          emailVerified: user.emailVerified,
-          
-          // Firestore properties
-          company: firestoreData.company || '',
-          role: firestoreData.role || 'user',
-          createdAt: firestoreData.createdAt || null,
-          updatedAt: firestoreData.updatedAt || null,
-          
-          // Keep Firebase Auth methods for updateProfile to work
-          getIdToken: user.getIdToken?.bind(user),
-          reload: user.reload?.bind(user)
-        };
-        
-        return combinedUser;
-      } else {
-        // Create document if not exists
-        const newUserData = await createUserDocument(user);
-        return {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName || '',
-          photoURL: user.photoURL || '',
-          emailVerified: user.emailVerified,
-          company: newUserData?.company || '',
-          role: newUserData?.role || 'user',
-          createdAt: newUserData?.createdAt || new Date(),
-          updatedAt: newUserData?.updatedAt || new Date(),
-          getIdToken: user.getIdToken?.bind(user),
-          reload: user.reload?.bind(user)
-        };
+        const userData = userDoc.data();
+        setUserProfile(userData);
+        return userData;
       }
+      
+      return null;
     } catch (error) {
       console.error('❌ Error getting user profile:', error);
       return null;
     }
   };
 
-  // **NEW: Refresh user function**
-  const refreshUser = async () => {
+  // ✨ IMPROVED: Force refresh user data để update UI
+  const refreshUserData = async (user) => {
+    if (!user) return;
+    
     try {
-      console.log('🔄 Refreshing user data...');
+      console.log('🔄 Refreshing user data for UI update');
       
-      const firebaseUser = auth.currentUser;
-      if (!firebaseUser) {
-        console.log('❌ No Firebase user found during refresh');
-        setCurrentUser(null);
-        setUserProfile(null);
-        return null;
-      }
-
-      // Force reload Firebase Auth user to get latest data
-      await firebaseUser.reload();
+      // Force reload user từ Firebase Auth
+      await user.reload();
       
-      // Get fresh user profile from Firestore
-      const freshProfile = await getUserProfile(firebaseUser);
+      // Lấy fresh data từ Firestore
+      const freshProfile = await getUserProfile(user);
+      
+      // Trigger re-render bằng cách update state
+      setCurrentUser({...user}); // Create new object reference
       
       if (freshProfile) {
-        console.log('✅ User data refreshed successfully:', {
-          photoURL: freshProfile.photoURL,
-          displayName: freshProfile.displayName
-        });
-        
-        setCurrentUser(freshProfile);
-        setUserProfile(freshProfile); // Keep backward compatibility
-        return freshProfile;
-      } else {
-        console.log('❌ Failed to refresh user profile');
-        return null;
+        setUserProfile({...freshProfile}); // Create new object reference
       }
+      
+      console.log('✅ User data refreshed successfully');
+      
     } catch (error) {
-      console.error('❌ Error refreshing user:', error);
-      throw error;
+      console.error('❌ Error refreshing user data:', error);
     }
   };
 
-  // Cập nhật thông tin profile người dùng
+  // ✨ IMPROVED: Cập nhật thông tin profile với better state management
   const updateUserProfile = async (updates) => {
-    const firebaseUser = auth.currentUser; // Get Firebase user directly
-    if (!firebaseUser) {
-      throw new Error('Người dùng chưa đăng nhập. Vui lòng đăng nhập lại.');
+    if (!currentUser) {
+      throw new Error('Người dùng chưa đăng nhập');
+    }
+
+    if (!currentUser.uid || typeof currentUser.getIdToken !== 'function') {
+      console.error('❌ Invalid currentUser object:', currentUser);
+      throw new Error('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.');
     }
 
     console.log('🚀 updateUserProfile started:', { 
-      userId: firebaseUser.uid,
-      updates: Object.keys(updates)
+      userId: currentUser.uid,
+      updates: Object.keys(updates),
     });
 
     try {
-      const userRef = doc(db, 'users', firebaseUser.uid);
+      const userRef = doc(db, 'users', currentUser.uid);
       let updatedData = { ...updates };
+      let newPhotoURL = null;
 
-      // Nếu có upload avatar
+      // ✨ XỬ LÝ UPLOAD AVATAR VỚI CACHE BUSTING
       if (updates.avatar) {
         const file = updates.avatar;
         
@@ -186,9 +141,9 @@ export function AuthProvider({ children }) {
           type: file.type
         });
         
-        // Validate file trước khi upload
+        // Validate file
         const validation = validateImageFile(file, {
-          maxSizeBytes: 10 * 1024 * 1024, // 10MB
+          maxSizeBytes: 10 * 1024 * 1024,
           allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
         });
 
@@ -197,20 +152,23 @@ export function AuthProvider({ children }) {
         }
 
         try {
-          // Upload lên Cloudinary
-          const photoURL = await uploadToCloudinary(file, 'avatars', {
-            public_id: `user_${firebaseUser.uid}`,
+          // ✨ UPLOAD VỚI UNIQUE PUBLIC_ID VÀ CACHE BUSTING
+          newPhotoURL = await uploadToCloudinary(file, 'avatars', {
+            public_id: `user_${currentUser.uid}`,
             tags: 'avatar,profile'
           });
 
-          console.log('✅ Cloudinary upload successful:', photoURL);
+          console.log('✅ Cloudinary upload successful:', newPhotoURL);
           
-          // Cập nhật photoURL trong Firebase Auth
-          await updateProfile(firebaseUser, { photoURL });
-          console.log('✅ Updated Firebase Auth profile with new photo');
+          // ✨ FORCE REFRESH URL ĐỂ BYPASS CACHE
+          const refreshedPhotoURL = forceRefreshCloudinaryUrl(newPhotoURL);
           
-          // Thay thế avatar bằng photoURL để lưu vào Firestore
-          updatedData = { ...updates, photoURL };
+          // Update Firebase Auth profile
+          await updateProfile(currentUser, { photoURL: refreshedPhotoURL });
+          console.log('✅ Updated Firebase Auth profile');
+          
+          // Set updatedData for Firestore
+          updatedData = { ...updates, photoURL: refreshedPhotoURL };
           delete updatedData.avatar;
 
         } catch (uploadError) {
@@ -232,13 +190,16 @@ export function AuthProvider({ children }) {
         }
       }
 
-      // Nếu có cập nhật displayName
+      // Update displayName in Firebase Auth if provided
       if (updates.displayName) {
-        await updateProfile(firebaseUser, { displayName: updates.displayName });
+        await updateProfile(currentUser, { 
+          displayName: updates.displayName,
+          ...(newPhotoURL && { photoURL: newPhotoURL })
+        });
         console.log('✅ Updated displayName in Firebase Auth');
       }
 
-      // Cập nhật thông tin trong Firestore
+      // ✨ UPDATE FIRESTORE VỚI TIMESTAMP
       console.log('📝 Updating Firestore with:', Object.keys(updatedData));
       
       await updateDoc(userRef, {
@@ -247,6 +208,13 @@ export function AuthProvider({ children }) {
       });
       
       console.log('✅ Firestore updated successfully');
+
+      // ✨ FORCE REFRESH USER DATA ĐỂ UPDATE UI
+      setTimeout(async () => {
+        await refreshUserData(currentUser);
+        console.log('🔄 UI refreshed with new data');
+      }, 500); // Small delay để đảm bảo Firestore đã sync
+
       console.log('🎉 updateUserProfile completed successfully');
 
     } catch (error) {
@@ -261,11 +229,7 @@ export function AuthProvider({ children }) {
       console.log('📝 Registering new user:', email);
       
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Cập nhật tên hiển thị
       await updateProfile(user, { displayName: name });
-      
-      // Tạo tài liệu người dùng trong Firestore
       await createUserDocument(user, { name, company });
       
       console.log('✅ User registration completed');
@@ -280,10 +244,8 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       console.log('🔐 Logging in user:', email);
-      
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Login successful');
-      
       return user;
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -295,17 +257,8 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     try {
       console.log('🔐 Google login started');
-      
       const { user } = await signInWithPopup(auth, googleProvider);
-      
-      // Kiểm tra xem user đã tồn tại chưa, nếu chưa thì tạo document
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
-      
-      if (!userDoc.exists()) {
-        await createUserDocument(user);
-      }
-      
+      await createUserDocument(user);
       console.log('✅ Google login successful');
       return user;
     } catch (error) {
@@ -318,17 +271,8 @@ export function AuthProvider({ children }) {
   const loginWithFacebook = async () => {
     try {
       console.log('🔐 Facebook login started');
-      
       const { user } = await signInWithPopup(auth, facebookProvider);
-      
-      // Kiểm tra xem user đã tồn tại chưa, nếu chưa thì tạo document
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
-      
-      if (!userDoc.exists()) {
-        await createUserDocument(user);
-      }
-      
+      await createUserDocument(user);
       console.log('✅ Facebook login successful');
       return user;
     } catch (error) {
@@ -342,7 +286,6 @@ export function AuthProvider({ children }) {
     try {
       console.log('👋 Logging out user');
       await signOut(auth);
-      setCurrentUser(null);
       setUserProfile(null);
       console.log('✅ Logout successful');
     } catch (error) {
@@ -351,7 +294,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Theo dõi trạng thái xác thực của người dùng
+  // ✨ IMPROVED: Auth state listener với better error handling
   useEffect(() => {
     console.log('🎯 Setting up auth state listener');
     
@@ -360,54 +303,21 @@ export function AuthProvider({ children }) {
       
       if (user) {
         try {
-          setLoading(true);
+          setCurrentUser(user);
+          await getUserProfile(user);
           
-          // Get combined user profile (Firebase Auth + Firestore)
-          const combinedUser = await getUserProfile(user);
-          
-          if (combinedUser) {
-            setCurrentUser(combinedUser);
-            setUserProfile(combinedUser); // Keep for backward compatibility
-            console.log('✅ Combined user profile set successfully');
-          } else {
-            console.log('❌ Failed to load combined user profile, using Firebase Auth only');
-            // Fallback to Firebase Auth user only
-            setCurrentUser({
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName || '',
-              photoURL: user.photoURL || '',
-              emailVerified: user.emailVerified,
-              company: '',
-              role: 'user',
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              getIdToken: user.getIdToken?.bind(user),
-              reload: user.reload?.bind(user)
-            });
+          if (!userProfile) {
+            await createUserDocument(user);
           }
+          
+          console.log('✅ User setup completed');
         } catch (error) {
-          console.error('❌ Error in auth state change:', error);
-          // Fallback to basic user object
-          setCurrentUser({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-            emailVerified: user.emailVerified,
-            company: '',
-            role: 'user',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            getIdToken: user.getIdToken?.bind(user),
-            reload: user.reload?.bind(user)
-          });
+          console.error('❌ Error loading user data:', error);
+          setCurrentUser(user);
         }
       } else {
-        // Nếu người dùng đăng xuất
         setCurrentUser(null);
         setUserProfile(null);
-        console.log('🔄 User signed out, cleared state');
       }
       
       setLoading(false);
@@ -419,24 +329,58 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
+  // ✨ IMPROVED: Combined user object với better merging
+  const combinedUser = currentUser ? {
+    ...currentUser,
+    ...(userProfile || {}),
+    uid: currentUser.uid,
+    email: currentUser.email,
+    emailVerified: currentUser.emailVerified,
+    displayName: userProfile?.displayName || currentUser.displayName,
+    photoURL: userProfile?.photoURL || currentUser.photoURL
+  } : null;
+
   const value = {
-    currentUser, // Now contains combined Firebase Auth + Firestore data
-    userProfile, // Keep for backward compatibility
-    loading,
+    currentUser: combinedUser,
+    userProfile,
     register,
     login,
     loginWithGoogle,
     loginWithFacebook,
     logout,
     updateUserProfile,
-    refreshUser, // NEW: Add refreshUser function
-    getUserProfile,
-    createUserDocument
+    refreshUserData, // ✨ NEW: Export refresh function
+    loading
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {loading ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '100vh',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid #f3f4f6',
+            borderTop: '3px solid #0891b2',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <div>Đang tải...</div>
+          <style jsx>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 }

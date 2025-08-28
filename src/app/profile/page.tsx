@@ -1,5 +1,3 @@
-// src/app/profile/page.tsx - SAFE VERSION (Compatible with existing AuthContext)
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -8,7 +6,7 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { buildCloudinaryUrl } from '@/utils/cloudinary';
+import { buildCloudinaryUrl, forceRefreshCloudinaryUrl } from '@/utils/cloudinary';
 import {
   UserCircleIcon,
   CameraIcon,
@@ -16,8 +14,6 @@ import {
   CheckIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
-  PhotoIcon,
-  TrashIcon
 } from '@heroicons/react/24/outline';
 import styles from './profile.module.css';
 
@@ -28,11 +24,7 @@ interface FormData {
 }
 
 export default function ProfilePage() {
-  // Safe destructuring - refreshUser might not exist in older AuthContext
-  const authContext = useAuth();
-  const { currentUser, updateUserProfile, loading } = authContext;
-  const refreshUser = (authContext as any).refreshUser; // Safe access
-  
+  const { currentUser, updateUserProfile, refreshUserData, loading } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -44,6 +36,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     displayName: '',
@@ -51,32 +44,21 @@ export default function ProfilePage() {
     email: ''
   });
 
-  // Đồng bộ formData khi currentUser thay đổi
+  // ✨ IMPROVED: Đồng bộ formData khi currentUser thay đổi
   useEffect(() => {
     if (currentUser) {
       setFormData({
         displayName: currentUser.displayName || '',
-        company: (currentUser as any).company || '', // Safe access
+        company: currentUser.company || '',
         email: currentUser.email || ''
       });
     }
   }, [currentUser]);
 
-  // Debug log để kiểm tra currentUser
-  useEffect(() => {
-    console.log('👤 Current User in ProfilePage:', {
-      uid: currentUser?.uid,
-      email: currentUser?.email,
-      displayName: currentUser?.displayName,
-      photoURL: currentUser?.photoURL,
-      company: (currentUser as any)?.company
-    });
-  }, [currentUser]);
-
-  // Clean up preview URL when component unmounts
+  // ✨ IMPROVED: Clean up preview URL khi component unmount
   useEffect(() => {
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
+      if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
       }
     };
@@ -97,6 +79,18 @@ export default function ProfilePage() {
     fileInputRef.current?.click();
   };
 
+  // ✨ IMPROVED: Clear preview URL properly
+  const clearPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+    }
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -108,10 +102,8 @@ export default function ProfilePage() {
       lastModified: new Date(file.lastModified).toISOString()
     });
 
-    // Reset file input để có thể chọn lại cùng file
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    // ✨ CLEAR PREVIOUS PREVIEW
+    clearPreview();
 
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -126,21 +118,17 @@ export default function ProfilePage() {
       return;
     }
 
-    // Clean up previous preview URL
-    if (previewUrl && previewUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
-    // Tạo preview URL
+    // ✨ IMPROVED: Create preview URL và lưu file reference
     const filePreviewUrl = URL.createObjectURL(file);
     setPreviewUrl(filePreviewUrl);
+    setSelectedFile(file);
 
     setUploading(true);
     setUploadProgress(0);
     setError('');
     setSuccess('');
     
-    // Simulate progress (Cloudinary không hỗ trợ real-time progress với fetch)
+    // Simulate progress
     const progressInterval = setInterval(() => {
       setUploadProgress(prev => {
         if (prev >= 90) return prev;
@@ -151,57 +139,26 @@ export default function ProfilePage() {
     try {
       console.log('🚀 Starting upload for user:', currentUser?.uid);
       
+      // ✨ UPLOAD AVATAR VỚI IMPROVED ERROR HANDLING
       await updateUserProfile({ avatar: file });
       
       setUploadProgress(100);
-      
-      // Clear progress interval
-      clearInterval(progressInterval);
-      
-      // IMPORTANT: Clear preview URL để hiển thị ảnh mới từ Cloudinary
-      setTimeout(() => {
-        if (previewUrl && previewUrl.startsWith('blob:')) {
-          URL.revokeObjectURL(previewUrl);
-        }
-        setPreviewUrl('');
-      }, 1000); // Wait 1 second for upload to complete
-      
-      // Force refresh user data nếu có function refreshUser
-      if (refreshUser && typeof refreshUser === 'function') {
-        console.log('🔄 Refreshing user data...');
-        try {
-          await refreshUser();
-        } catch (refreshError) {
-          console.warn('⚠️ refreshUser failed, but upload was successful:', refreshError);
-        }
-      } else {
-        console.log('⚠️ refreshUser not available, will rely on auth state change');
-        // Force page reload as fallback
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-      
       setSuccess('🎉 Cập nhật avatar thành công!');
       console.log('✅ Upload completed successfully');
       
-      // Tự động ẩn thông báo success sau 5 giây
+      // ✨ CLEAR PREVIEW AFTER SUCCESS
       setTimeout(() => {
+        clearPreview();
         setSuccess('');
-      }, 5000);
+      }, 2000);
 
     } catch (error: any) {
       console.error('❌ Upload avatar error:', error);
       
-      // Clear progress interval on error
-      clearInterval(progressInterval);
-      
       let errorMessage = '';
       
-      // Xử lý các lỗi cụ thể
       if (error.message.includes('Người dùng chưa đăng nhập')) {
         errorMessage = '🔐 Vui lòng đăng nhập lại để tiếp tục';
-        // Có thể redirect về trang login
         setTimeout(() => router.push('/auth'), 2000);
       } else if (error.message.includes('File ảnh không hợp lệ')) {
         errorMessage = '📸 File ảnh không hợp lệ. Vui lòng chọn ảnh khác';
@@ -212,97 +169,90 @@ export default function ProfilePage() {
       } else if (error.message.includes('Network')) {
         errorMessage = '🌐 Lỗi kết nối. Vui lòng kiểm tra internet và thử lại';
       } else {
-        errorMessage = `❌ ${error.message || 'Lỗi không xác định. Vui lòng thử lại.'}`;
+        errorMessage = `❌ ${error.message || 'Lỗi không xác định. Vui lòng thử lại'}`;
       }
       
       setError(errorMessage);
-      
-      // Clear preview URL on error và hiển thị lại ảnh cũ
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      setPreviewUrl('');
-
-    } finally {
-      setUploading(false);
       setUploadProgress(0);
+      
+      // ✨ CLEAR PREVIEW ON ERROR
+      setTimeout(() => {
+        clearPreview();
+      }, 1000);
+      
+    } finally {
       clearInterval(progressInterval);
+      setUploading(false);
     }
   };
 
-  const handleFormSubmit = async () => {
-    if (!currentUser) return;
+  const handleSaveChanges = async () => {
+    if (!formData.displayName.trim()) {
+      setError('📝 Tên hiển thị không được để trống');
+      return;
+    }
+
+    const hasChanges = 
+      formData.displayName.trim() !== (currentUser?.displayName || '') ||
+      formData.company.trim() !== (currentUser?.company || '');
+
+    if (!hasChanges) {
+      setError('ℹ️ Không có thông tin nào được thay đổi');
+      return;
+    }
 
     setSaving(true);
     setError('');
     setSuccess('');
-
+    
     try {
-      const updates: any = {};
+      await updateUserProfile({
+        displayName: formData.displayName.trim(),
+        company: formData.company.trim()
+      });
       
-      // Chỉ cập nhật những field đã thay đổi
-      if (formData.displayName !== (currentUser.displayName || '')) {
-        updates.displayName = formData.displayName.trim();
-      }
-      
-      if (formData.company !== ((currentUser as any).company || '')) {
-        updates.company = formData.company.trim();
-      }
-
-      // Nếu có thay đổi
-      if (Object.keys(updates).length > 0) {
-        console.log('🔄 Updating profile:', updates);
-        await updateUserProfile(updates);
-        
-        // Force refresh user data nếu có
-        if (refreshUser && typeof refreshUser === 'function') {
-          try {
-            await refreshUser();
-          } catch (refreshError) {
-            console.warn('⚠️ refreshUser failed during form update:', refreshError);
-          }
-        }
-        
-        setSuccess('✅ Cập nhật thông tin thành công!');
-        setTimeout(() => setSuccess(''), 5000);
-      } else {
-        setSuccess('ℹ️ Không có thay đổi nào để lưu');
-        setTimeout(() => setSuccess(''), 3000);
-      }
-      
+      setSuccess('✅ Cập nhật thông tin thành công!');
       setIsEditing(false);
-
+      
+      setTimeout(() => {
+        setSuccess('');
+      }, 3000);
     } catch (error: any) {
       console.error('❌ Update profile error:', error);
-      setError(`❌ ${error.message || 'Lỗi cập nhật thông tin. Vui lòng thử lại.'}`);
+      setError('❌ Lỗi khi cập nhật thông tin: ' + (error.message || 'Vui lòng thử lại'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancelEdit = () => {
-    // Reset form về dữ liệu ban đầu
-    if (currentUser) {
-      setFormData({
-        displayName: currentUser.displayName || '',
-        company: (currentUser as any).company || '',
-        email: currentUser.email || ''
-      });
-    }
+    setFormData({
+      displayName: currentUser?.displayName || '',
+      company: currentUser?.company || '',
+      email: currentUser?.email || ''
+    });
     setIsEditing(false);
     setError('');
     setSuccess('');
   };
 
-  // Format date helper
   const formatDate = (date: any) => {
     if (!date) return 'Không xác định';
     
     try {
-      // Xử lý Firebase Timestamp
-      const dateObj = date.toDate ? date.toDate() : new Date(date);
+      let dateObject: Date;
       
-      return dateObj.toLocaleDateString('vi-VN', {
+      if (date.toDate && typeof date.toDate === 'function') {
+        dateObject = date.toDate();
+      } else if (date instanceof Date) {
+        dateObject = date;
+      } else if (typeof date === 'string') {
+        dateObject = new Date(date);
+      } else {
+        return 'Không xác định';
+      }
+      
+      return dateObject.toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -315,27 +265,21 @@ export default function ProfilePage() {
     }
   };
 
-  // Tạo optimized avatar URL với Cloudinary transformations + timestamp để tránh cache
+  // ✨ IMPROVED: Get optimized avatar URL với force refresh
   const getOptimizedAvatarUrl = (url: string) => {
     if (!url) return '';
     
-    try {
-      const optimizedUrl = buildCloudinaryUrl(url, {
-        width: 400,
-        height: 400,
-        crop: 'fill',
-        gravity: 'face',
-        quality: 'auto',
-        format: 'auto'
-      });
-      
-      // Thêm timestamp để force refresh cache
-      const separator = optimizedUrl.includes('?') ? '&' : '?';
-      return `${optimizedUrl}${separator}t=${Date.now()}`;
-    } catch (error) {
-      console.error('Error optimizing avatar URL:', error);
-      return url; // Fallback to original URL
-    }
+    // Force refresh nếu không có preview
+    const refreshedUrl = previewUrl ? url : forceRefreshCloudinaryUrl(url);
+    
+    return buildCloudinaryUrl(refreshedUrl, {
+      width: 400,
+      height: 400,
+      crop: 'fill',
+      gravity: 'face',
+      quality: 'auto',
+      format: 'auto'
+    });
   };
 
   if (loading) {
@@ -351,10 +295,9 @@ export default function ProfilePage() {
     return null;
   }
 
-  const optimizedAvatarUrl = getOptimizedAvatarUrl(currentUser.photoURL || '');
-  const userRole = (currentUser as any)?.role || 'user'; // Safe access
-  const createdAt = (currentUser as any)?.createdAt;
-  const updatedAt = (currentUser as any)?.updatedAt;
+  // ✨ IMPROVED: Avatar URL logic
+  const currentAvatarUrl = currentUser.photoURL || '';
+  const optimizedAvatarUrl = getOptimizedAvatarUrl(currentAvatarUrl);
 
   return (
     <ProtectedRoute>
@@ -401,29 +344,29 @@ export default function ProfilePage() {
               )}
 
               <div className={styles.profileCard}>
-                {/* Avatar Section */}
+                {/* ✨ IMPROVED: Avatar Section */}
                 <div className={styles.avatarSection}>
                   <div 
                     className={`${styles.avatarContainer} ${uploading ? styles.uploading : ''}`}
                     onClick={handleAvatarClick}
-                    title="Click để đổi avatar"
                   >
                     {previewUrl ? (
-                      // Preview ảnh mới
+                      // ✨ PREVIEW ẢNH MỚI
                       <img 
                         src={previewUrl}
                         alt="Preview" 
                         className={styles.avatar}
+                        style={{ opacity: uploading ? 0.7 : 1 }}
                       />
                     ) : optimizedAvatarUrl ? (
-                      // Ảnh hiện tại từ Cloudinary
+                      // ✨ ẢNH HIỆN TẠI TỪ CLOUDINARY
                       <img 
                         src={optimizedAvatarUrl}
                         alt="Avatar" 
                         className={styles.avatar}
+                        key={currentAvatarUrl} // ✨ FORCE RE-RENDER KHI URL THAY ĐỔI
                         onError={(e) => {
-                          console.error('Avatar load error');
-                          // Fallback to default icon
+                          console.error('Avatar load error:', e);
                           e.currentTarget.style.display = 'none';
                         }}
                       />
@@ -450,7 +393,9 @@ export default function ProfilePage() {
                       ) : (
                         <>
                           <CameraIcon className={styles.cameraIcon} />
-                          <span className={styles.avatarText}>Đổi ảnh</span>
+                          <span className={styles.avatarText}>
+                            {previewUrl ? 'Đang tải...' : 'Đổi ảnh'}
+                          </span>
                         </>
                       )}
                     </div>
@@ -470,120 +415,118 @@ export default function ProfilePage() {
                       {currentUser.displayName || 'Người dùng'}
                     </h2>
                     <p className={styles.userRole}>
-                      {userRole === 'admin' ? '👑 Quản trị viên' : '👤 Người dùng'}
+                      {currentUser.role === 'admin' ? '👑 Quản trị viên' : '👤 Người dùng'}
                     </p>
                   </div>
                 </div>
 
-                {/* Form Section */}
-                <div className={styles.formSection}>
-                  <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label htmlFor="displayName" className={styles.formLabel}>
-                        Họ và tên
-                      </label>
-                      <input
-                        type="text"
-                        id="displayName"
-                        name="displayName"
-                        value={formData.displayName}
-                        onChange={handleInputChange}
-                        disabled={!isEditing || saving}
-                        className={styles.formInput}
-                        placeholder="Nhập họ và tên"
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label htmlFor="email" className={styles.formLabel}>
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        disabled={true} // Email không được phép thay đổi
-                        className={styles.formInput}
-                        placeholder="Email"
-                      />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label htmlFor="company" className={styles.formLabel}>
-                        Công ty
-                      </label>
-                      <input
-                        type="text"
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleInputChange}
-                        disabled={!isEditing || saving}
-                        className={styles.formInput}
-                        placeholder="Nhập tên công ty"
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.formActions}>
-                    {!isEditing ? (
+                {/* User Information */}
+                <div className={styles.userInfoSection}>
+                  <div className={styles.sectionHeader}>
+                    <h3 className={styles.sectionTitle}>Thông tin cơ bản</h3>
+                    {!isEditing && (
                       <button
-                        type="button"
-                        onClick={() => setIsEditing(true)}
                         className={styles.editButton}
-                        disabled={uploading}
+                        onClick={() => setIsEditing(true)}
                       >
-                        <PencilIcon className={styles.buttonIcon} />
+                        <PencilIcon className={styles.editIcon} />
                         Chỉnh sửa
                       </button>
-                    ) : (
-                      <>
+                    )}
+                  </div>
+
+                  <div className={styles.infoFields}>
+                    {/* Display Name */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>Tên hiển thị</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          name="displayName"
+                          value={formData.displayName}
+                          onChange={handleInputChange}
+                          className={styles.fieldInput}
+                          placeholder="Nhập tên hiển thị"
+                        />
+                      ) : (
+                        <div className={styles.fieldValue}>
+                          {currentUser.displayName || 'Chưa cập nhật'}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Company */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>Công ty</label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          className={styles.fieldInput}
+                          placeholder="Nhập tên công ty"
+                        />
+                      ) : (
+                        <div className={styles.fieldValue}>
+                          {currentUser.company || 'Chưa cập nhật'}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Email (readonly) */}
+                    <div className={styles.fieldGroup}>
+                      <label className={styles.fieldLabel}>Email</label>
+                      <div className={styles.fieldValue}>
+                        {currentUser.email}
+                        {currentUser.emailVerified ? (
+                          <span className={styles.verifiedBadge}>✅ Đã xác thực</span>
+                        ) : (
+                          <span className={styles.unverifiedBadge}>⚠️ Chưa xác thực</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action buttons for editing */}
+                    {isEditing && (
+                      <div className={styles.actionButtons}>
                         <button
-                          type="button"
-                          onClick={handleFormSubmit}
-                          disabled={saving || uploading}
                           className={styles.saveButton}
+                          onClick={handleSaveChanges}
+                          disabled={saving}
                         >
                           <CheckIcon className={styles.buttonIcon} />
                           {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                         </button>
                         
                         <button
-                          type="button"
+                          className={styles.cancelButton}
                           onClick={handleCancelEdit}
                           disabled={saving}
-                          className={styles.cancelButton}
                         >
                           <XMarkIcon className={styles.buttonIcon} />
                           Hủy
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Additional Info */}
-                <div className={styles.additionalInfo}>
-                  <div className={styles.infoGrid}>
-                    <div className={styles.infoItem}>
-                      <div className={styles.infoLabel}>Ngày tạo tài khoản</div>
-                      <div className={styles.infoValue}>
-                        {formatDate(createdAt)}
+                {/* Account Statistics */}
+                <div className={styles.statsSection}>
+                  <h3 className={styles.sectionTitle}>Thống kê tài khoản</h3>
+                  <div className={styles.statsGrid}>
+                    <div className={styles.statCard}>
+                      <div className={styles.statLabel}>Ngày tạo tài khoản</div>
+                      <div className={styles.statValue}>
+                        {formatDate(currentUser.createdAt)}
                       </div>
                     </div>
                     
-                    <div className={styles.infoItem}>
-                      <div className={styles.infoLabel}>Lần cập nhật cuối</div>
-                      <div className={styles.infoValue}>
-                        {formatDate(updatedAt)}
-                      </div>
-                    </div>
-                    
-                    <div className={styles.infoItem}>
-                      <div className={styles.infoLabel}>Trạng thái email</div>
-                      <div className={styles.infoValue}>
-                        {currentUser.emailVerified ? '✅ Đã xác thực' : '⚠️ Chưa xác thực'}
+                    <div className={styles.statCard}>
+                      <div className={styles.statLabel}>Lần cập nhật cuối</div>
+                      <div className={styles.statValue}>
+                        {formatDate(currentUser.updatedAt)}
                       </div>
                     </div>
                   </div>

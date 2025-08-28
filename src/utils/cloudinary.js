@@ -1,12 +1,12 @@
-// src/utils/cloudinary.js - Simplified Version
-// Version đơn giản để tránh lỗi transformation
+// src/utils/cloudinary.js - FIXED VERSION với cache busting
+// Version với cache busting để fix lỗi avatar cũ
 
 /**
- * Upload ảnh lên Cloudinary - Version đơn giản
+ * Upload ảnh lên Cloudinary với cache busting
  * @param {File} file - File ảnh cần upload
  * @param {string} folder - Folder name (default: 'avatars')
  * @param {Object} options - Upload options
- * @returns {Promise<string>} - URL của ảnh đã upload
+ * @returns {Promise<string>} - URL của ảnh đã upload với cache busting
  */
 export const uploadToCloudinary = async (file, folder = 'avatars', options = {}) => {
   try {
@@ -27,19 +27,17 @@ export const uploadToCloudinary = async (file, folder = 'avatars', options = {})
     // Tạo FormData để upload
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'user_avatars'); // Sử dụng preset đã cấu hình
+    formData.append('upload_preset', 'user_avatars');
     
-    // Chỉ append các options được phép cho unsigned upload
+    // ✨ THÊM TIMESTAMP VÀO PUBLIC_ID ĐỂ FORCE CACHE BUST
+    const timestamp = Date.now();
     if (options.public_id) {
-      formData.append('public_id', options.public_id);
+      formData.append('public_id', `${options.public_id}_${timestamp}`);
     }
     
-    // KHÔNG dùng overwrite với unsigned upload!
-    // if (options.overwrite !== undefined) {
-    //   formData.append('overwrite', options.overwrite.toString());
-    // }
+    // NOTE: Không thể dùng 'invalidate' với unsigned upload preset
     
-    // Các parameters được phép cho unsigned upload:
+    // Các parameters được phép cho unsigned upload
     if (options.tags) {
       formData.append('tags', options.tags);
     }
@@ -48,7 +46,7 @@ export const uploadToCloudinary = async (file, folder = 'avatars', options = {})
       formData.append('context', JSON.stringify(options.context));
     }
     
-    // Folder sẽ được set trong Upload Preset, nhưng có thể override
+    // Folder sẽ được set trong Upload Preset
     if (folder && folder !== 'avatars') {
       formData.append('folder', folder);
     }
@@ -60,7 +58,7 @@ export const uploadToCloudinary = async (file, folder = 'avatars', options = {})
     
     // Upload với timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch(uploadUrl, {
       method: 'POST',
@@ -98,12 +96,15 @@ export const uploadToCloudinary = async (file, folder = 'avatars', options = {})
       version: data.version
     });
 
-    return data.secure_url;
+    // ✨ RETURN URL WITH MULTIPLE CACHE BUSTING STRATEGIES
+    const cacheBustUrl = `${data.secure_url}?v=${data.version}&t=${timestamp}&cb=${Date.now()}`;
+    console.log('🔄 Cache bust URL:', cacheBustUrl);
+    
+    return cacheBustUrl;
 
   } catch (error) {
     console.error('❌ Error in uploadToCloudinary:', error);
     
-    // Xử lý các lỗi phổ biến
     if (error.name === 'AbortError') {
       throw new Error('Upload timeout - Vui lòng thử lại');
     }
@@ -118,17 +119,13 @@ export const uploadToCloudinary = async (file, folder = 'avatars', options = {})
 
 /**
  * Validate file trước khi upload
- * @param {File} file - File cần validate  
- * @param {Object} options - Validation options
- * @returns {Object} - { isValid: boolean, error: string }
  */
 export const validateImageFile = (file, options = {}) => {
   const {
-    maxSizeBytes = 10 * 1024 * 1024, // 10MB default cho Cloudinary
+    maxSizeBytes = 10 * 1024 * 1024,
     allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
   } = options;
 
-  // Check file type
   if (!allowedTypes.includes(file.type)) {
     return {
       isValid: false,
@@ -136,7 +133,6 @@ export const validateImageFile = (file, options = {}) => {
     };
   }
 
-  // Check file size
   if (file.size > maxSizeBytes) {
     const maxSizeMB = Math.round(maxSizeBytes / (1024 * 1024));
     return {
@@ -145,7 +141,6 @@ export const validateImageFile = (file, options = {}) => {
     };
   }
 
-  // Check if file is actually an image
   if (file.size === 0) {
     return {
       isValid: false,
@@ -157,12 +152,9 @@ export const validateImageFile = (file, options = {}) => {
 };
 
 /**
- * Tạo URL với transformation từ Cloudinary URL
- * @param {string} url - URL gốc từ Cloudinary
- * @param {Object} transformations - Các transformation cần áp dụng  
- * @returns {string} - URL đã transform
+ * ✨ IMPROVED: Tạo URL với transformation và cache busting
  */
-export const buildCloudinaryUrl = (url, transformations) => {
+export const buildCloudinaryUrl = (url, transformations = {}) => {
   if (!url || !url.includes('cloudinary.com')) {
     return url;
   }
@@ -183,25 +175,36 @@ export const buildCloudinaryUrl = (url, transformations) => {
     if (transformations.quality) transforms.push(`q_${transformations.quality}`);
     if (transformations.format) transforms.push(`f_${transformations.format}`);
     if (transformations.gravity) transforms.push(`g_${transformations.gravity}`);
+    
+    // ✨ THÊM CACHE BUSTING PARAMETER VÀO TRANSFORMATION
+    const cacheBust = `t_${Date.now()}`;
+    transforms.push(cacheBust);
 
     const transformString = transforms.join(',');
-    
-    if (!transformString) {
-      return url; // Không có transformation nào
-    }
     
     // Rebuild URL với transformations
     return `${parts[0]}/upload/${transformString}/${parts[1]}`;
   } catch (error) {
     console.error('❌ Error building Cloudinary URL:', error);
-    return url; // Fallback to original URL
+    return url;
   }
 };
 
 /**
+ * ✨ NEW: Force refresh Cloudinary image để bypass cache
+ */
+export const forceRefreshCloudinaryUrl = (url) => {
+  if (!url || !url.includes('cloudinary.com')) {
+    return url;
+  }
+  
+  const timestamp = Date.now();
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}refresh=${timestamp}`;
+};
+
+/**
  * Extract public ID từ Cloudinary URL
- * @param {string} url - Cloudinary URL
- * @returns {string|null} - Public ID hoặc null nếu không parse được
  */
 export const extractPublicId = (url) => {
   if (!url || !url.includes('cloudinary.com')) {
@@ -209,9 +212,7 @@ export const extractPublicId = (url) => {
   }
 
   try {
-    // Pattern: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/folder/public_id.format
-    // Hoặc: https://res.cloudinary.com/cloud_name/image/upload/transformations/v1234567890/folder/public_id.format
-    const match = url.match(/\/upload\/(?:[^\/]+\/)*(?:v\d+\/)?(.+?)(?:\.[^.]+)?$/);
+    const match = url.match(/\/upload\/(?:[^\/]+\/)*(?:v\d+\/)?(.+?)(?:\.[^.]+)?(?:\?.*)?$/);
     return match ? match[1] : null;
   } catch (error) {
     console.error('❌ Error extracting public ID:', error);
@@ -221,7 +222,6 @@ export const extractPublicId = (url) => {
 
 /**
  * Test kết nối đến Cloudinary
- * @returns {Promise<boolean>} - True nếu kết nối OK
  */
 export const testCloudinaryConnection = async () => {
   try {
@@ -231,7 +231,6 @@ export const testCloudinaryConnection = async () => {
       return false;
     }
 
-    // Test với một request đơn giản
     const testUrl = `https://res.cloudinary.com/${cloudName}/image/upload/sample.jpg`;
     const response = await fetch(testUrl, { method: 'HEAD' });
     
