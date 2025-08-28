@@ -1,3 +1,4 @@
+
 // Firebase User Types (extended from Firebase Auth User)
 export interface User {
   uid: string;
@@ -21,9 +22,10 @@ export interface ProfileUpdateData {
   photoURL?: string;
 }
 
-// Auth Context Types
+// Auth Context Types - UPDATED with refreshUser
 export interface AuthContextType {
   currentUser: User | null;
+  userProfile?: User | null;
   loading: boolean;
   register: (email: string, password: string, name: string, company?: string) => Promise<any>;
   login: (email: string, password: string) => Promise<any>;
@@ -31,6 +33,9 @@ export interface AuthContextType {
   loginWithFacebook: () => Promise<any>;
   logout: () => Promise<void>;
   updateUserProfile: (updates: ProfileUpdateData) => Promise<void>;
+  refreshUser?: () => Promise<User | null>; // NEW: Added refreshUser function
+  getUserProfile?: (user: any) => Promise<User | null>;
+  createUserDocument?: (user: any, additionalData?: any) => Promise<any>;
 }
 
 // Chat Types
@@ -171,6 +176,34 @@ export interface AlertState {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
   visible: boolean;
+}
+
+// Cloudinary Types
+export interface CloudinaryUploadOptions {
+  public_id?: string;
+  tags?: string;
+  overwrite?: boolean;
+  context?: Record<string, string>;
+}
+
+export interface CloudinaryTransformOptions {
+  width?: number;
+  height?: number;
+  crop?: string;
+  quality?: string;
+  format?: string;
+  gravity?: string;
+}
+
+// Image File Validation
+export interface ImageFileValidation {
+  isValid: boolean;
+  error: string | null;
+}
+
+export interface ImageFileValidationOptions {
+  maxSizeBytes?: number;
+  allowedTypes?: string[];
 }
 
 export default User;

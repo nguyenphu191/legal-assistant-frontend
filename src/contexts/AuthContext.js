@@ -1,3 +1,5 @@
+// src/contexts/AuthContext.js - FIXED COMPATIBILITY VERSION
+
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
@@ -25,8 +27,8 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null); // Firebase Auth User object
-  const [userProfile, setUserProfile] = useState(null); // Firestore user data
+  const [currentUser, setCurrentUser] = useState(null); // Combined Firebase Auth + Firestore data
+  const [userProfile, setUserProfile] = useState(null); // Keep for backward compatibility
   const [loading, setLoading] = useState(true);
 
   // Tạo tài liệu người dùng trong Firestore
@@ -49,22 +51,23 @@ export function AuthProvider({ children }) {
           role: 'user',
           company: additionalData.company || '',
           createdAt,
+          updatedAt: createdAt,
           ...additionalData
         };
         
         await setDoc(userRef, userData);
-        setUserProfile(userData); // Set user profile data
-        
         console.log('✅ Created user document in Firestore:', user.uid);
+        return userData;
       } catch (error) {
         console.error('❌ Lỗi khi tạo tài liệu người dùng:', error);
+        throw error;
       }
     }
     
-    return userRef;
+    return userDoc.data();
   };
 
-  // Lấy user profile từ Firestore
+  // Lấy user profile từ Firestore và merge với Firebase Auth data
   const getUserProfile = async (user) => {
     if (!user) return null;
     
@@ -73,39 +76,104 @@ export function AuthProvider({ children }) {
       const userDoc = await getDoc(userRef);
       
       if (userDoc.exists()) {
-        const userData = userDoc.data();
-        setUserProfile(userData);
-        return userData;
+        const firestoreData = userDoc.data();
+        
+        // Merge Firebase Auth data với Firestore data
+        const combinedUser = {
+          // Firebase Auth properties (keep methods)
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || firestoreData.displayName || '',
+          photoURL: user.photoURL || firestoreData.photoURL || '',
+          emailVerified: user.emailVerified,
+          
+          // Firestore properties
+          company: firestoreData.company || '',
+          role: firestoreData.role || 'user',
+          createdAt: firestoreData.createdAt || null,
+          updatedAt: firestoreData.updatedAt || null,
+          
+          // Keep Firebase Auth methods for updateProfile to work
+          getIdToken: user.getIdToken?.bind(user),
+          reload: user.reload?.bind(user)
+        };
+        
+        return combinedUser;
+      } else {
+        // Create document if not exists
+        const newUserData = await createUserDocument(user);
+        return {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+          emailVerified: user.emailVerified,
+          company: newUserData?.company || '',
+          role: newUserData?.role || 'user',
+          createdAt: newUserData?.createdAt || new Date(),
+          updatedAt: newUserData?.updatedAt || new Date(),
+          getIdToken: user.getIdToken?.bind(user),
+          reload: user.reload?.bind(user)
+        };
       }
-      
-      return null;
     } catch (error) {
       console.error('❌ Error getting user profile:', error);
       return null;
     }
   };
 
+  // **NEW: Refresh user function**
+  const refreshUser = async () => {
+    try {
+      console.log('🔄 Refreshing user data...');
+      
+      const firebaseUser = auth.currentUser;
+      if (!firebaseUser) {
+        console.log('❌ No Firebase user found during refresh');
+        setCurrentUser(null);
+        setUserProfile(null);
+        return null;
+      }
+
+      // Force reload Firebase Auth user to get latest data
+      await firebaseUser.reload();
+      
+      // Get fresh user profile from Firestore
+      const freshProfile = await getUserProfile(firebaseUser);
+      
+      if (freshProfile) {
+        console.log('✅ User data refreshed successfully:', {
+          photoURL: freshProfile.photoURL,
+          displayName: freshProfile.displayName
+        });
+        
+        setCurrentUser(freshProfile);
+        setUserProfile(freshProfile); // Keep backward compatibility
+        return freshProfile;
+      } else {
+        console.log('❌ Failed to refresh user profile');
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing user:', error);
+      throw error;
+    }
+  };
+
   // Cập nhật thông tin profile người dùng
   const updateUserProfile = async (updates) => {
-    if (!currentUser) {
-      throw new Error('Người dùng chưa đăng nhập');
-    }
-
-    // Kiểm tra currentUser có phải là Firebase User object hợp lệ
-    if (!currentUser.uid || typeof currentUser.getIdToken !== 'function') {
-      console.error('❌ Invalid currentUser object:', currentUser);
-      throw new Error('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.');
+    const firebaseUser = auth.currentUser; // Get Firebase user directly
+    if (!firebaseUser) {
+      throw new Error('Người dùng chưa đăng nhập. Vui lòng đăng nhập lại.');
     }
 
     console.log('🚀 updateUserProfile started:', { 
-      userId: currentUser.uid,
-      updates: Object.keys(updates),
-      userType: typeof currentUser,
-      hasGetIdToken: typeof currentUser.getIdToken === 'function'
+      userId: firebaseUser.uid,
+      updates: Object.keys(updates)
     });
 
     try {
-      const userRef = doc(db, 'users', currentUser.uid);
+      const userRef = doc(db, 'users', firebaseUser.uid);
       let updatedData = { ...updates };
 
       // Nếu có upload avatar
@@ -131,14 +199,14 @@ export function AuthProvider({ children }) {
         try {
           // Upload lên Cloudinary
           const photoURL = await uploadToCloudinary(file, 'avatars', {
-            public_id: `user_${currentUser.uid}`,
+            public_id: `user_${firebaseUser.uid}`,
             tags: 'avatar,profile'
           });
 
           console.log('✅ Cloudinary upload successful:', photoURL);
           
-          // Cập nhật photoURL trong Firebase Auth - sử dụng currentUser trực tiếp
-          await updateProfile(currentUser, { photoURL });
+          // Cập nhật photoURL trong Firebase Auth
+          await updateProfile(firebaseUser, { photoURL });
           console.log('✅ Updated Firebase Auth profile with new photo');
           
           // Thay thế avatar bằng photoURL để lưu vào Firestore
@@ -166,7 +234,7 @@ export function AuthProvider({ children }) {
 
       // Nếu có cập nhật displayName
       if (updates.displayName) {
-        await updateProfile(currentUser, { displayName: updates.displayName });
+        await updateProfile(firebaseUser, { displayName: updates.displayName });
         console.log('✅ Updated displayName in Firebase Auth');
       }
 
@@ -179,13 +247,6 @@ export function AuthProvider({ children }) {
       });
       
       console.log('✅ Firestore updated successfully');
-
-      // Cập nhật userProfile state
-      const updatedProfile = await getUserProfile(currentUser);
-      if (updatedProfile) {
-        setUserProfile(updatedProfile);
-      }
-
       console.log('🎉 updateUserProfile completed successfully');
 
     } catch (error) {
@@ -221,8 +282,8 @@ export function AuthProvider({ children }) {
       console.log('🔐 Logging in user:', email);
       
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-      
       console.log('✅ Login successful');
+      
       return user;
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -236,7 +297,14 @@ export function AuthProvider({ children }) {
       console.log('🔐 Google login started');
       
       const { user } = await signInWithPopup(auth, googleProvider);
-      await createUserDocument(user);
+      
+      // Kiểm tra xem user đã tồn tại chưa, nếu chưa thì tạo document
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        await createUserDocument(user);
+      }
       
       console.log('✅ Google login successful');
       return user;
@@ -252,7 +320,14 @@ export function AuthProvider({ children }) {
       console.log('🔐 Facebook login started');
       
       const { user } = await signInWithPopup(auth, facebookProvider);
-      await createUserDocument(user);
+      
+      // Kiểm tra xem user đã tồn tại chưa, nếu chưa thì tạo document
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      
+      if (!userDoc.exists()) {
+        await createUserDocument(user);
+      }
       
       console.log('✅ Facebook login successful');
       return user;
@@ -267,7 +342,8 @@ export function AuthProvider({ children }) {
     try {
       console.log('👋 Logging out user');
       await signOut(auth);
-      setUserProfile(null); // Clear user profile
+      setCurrentUser(null);
+      setUserProfile(null);
       console.log('✅ Logout successful');
     } catch (error) {
       console.error('❌ Logout error:', error);
@@ -284,26 +360,54 @@ export function AuthProvider({ children }) {
       
       if (user) {
         try {
-          // Set currentUser to Firebase Auth User object (giữ nguyên methods)
-          setCurrentUser(user);
+          setLoading(true);
           
-          // Lấy profile data từ Firestore riêng
-          await getUserProfile(user);
+          // Get combined user profile (Firebase Auth + Firestore)
+          const combinedUser = await getUserProfile(user);
           
-          // Tạo document nếu chưa có
-          if (!userProfile) {
-            await createUserDocument(user);
+          if (combinedUser) {
+            setCurrentUser(combinedUser);
+            setUserProfile(combinedUser); // Keep for backward compatibility
+            console.log('✅ Combined user profile set successfully');
+          } else {
+            console.log('❌ Failed to load combined user profile, using Firebase Auth only');
+            // Fallback to Firebase Auth user only
+            setCurrentUser({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              emailVerified: user.emailVerified,
+              company: '',
+              role: 'user',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              getIdToken: user.getIdToken?.bind(user),
+              reload: user.reload?.bind(user)
+            });
           }
-          
-          console.log('✅ User setup completed');
         } catch (error) {
-          console.error('❌ Error loading user data:', error);
-          setCurrentUser(user); // Fallback to Firebase Auth user
+          console.error('❌ Error in auth state change:', error);
+          // Fallback to basic user object
+          setCurrentUser({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            emailVerified: user.emailVerified,
+            company: '',
+            role: 'user',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            getIdToken: user.getIdToken?.bind(user),
+            reload: user.reload?.bind(user)
+          });
         }
       } else {
         // Nếu người dùng đăng xuất
         setCurrentUser(null);
         setUserProfile(null);
+        console.log('🔄 User signed out, cleared state');
       }
       
       setLoading(false);
@@ -315,61 +419,24 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  // Tạo combined user object cho component sử dụng
-  const combinedUser = currentUser ? {
-    // Firebase Auth properties (giữ nguyên methods)
-    ...currentUser,
-    // Firestore properties (override các properties trùng tên)
-    ...(userProfile || {}),
-    // Đảm bảo các properties quan trọng từ Firebase Auth
-    uid: currentUser.uid,
-    email: currentUser.email,
-    emailVerified: currentUser.emailVerified,
-    // Thêm properties từ userProfile nếu có
-    displayName: userProfile?.displayName || currentUser.displayName,
-    photoURL: userProfile?.photoURL || currentUser.photoURL
-  } : null;
-
   const value = {
-    currentUser: combinedUser, // Combined user object
-    userProfile,               // Firestore data riêng
-    register,                  // Hàm đăng ký
-    login,                     // Hàm đăng nhập bằng email
-    loginWithGoogle,           // Hàm đăng nhập bằng Google
-    loginWithFacebook,         // Hàm đăng nhập bằng Facebook
-    logout,                    // Hàm đăng xuất
-    updateUserProfile,         // Hàm cập nhật profile
-    loading                    // Trạng thái tải dữ liệu
+    currentUser, // Now contains combined Firebase Auth + Firestore data
+    userProfile, // Keep for backward compatibility
+    loading,
+    register,
+    login,
+    loginWithGoogle,
+    loginWithFacebook,
+    logout,
+    updateUserProfile,
+    refreshUser, // NEW: Add refreshUser function
+    getUserProfile,
+    createUserDocument
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '100vh',
-          flexDirection: 'column',
-          gap: '1rem'
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid #f3f4f6',
-            borderTop: '3px solid #0891b2',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <div>Đang tải...</div>
-          <style jsx>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-        </div>
-      ) : children}
+      {children}
     </AuthContext.Provider>
   );
 }
