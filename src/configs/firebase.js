@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+// Đã loại bỏ Firebase Storage
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8xrw8YpD0D6FAflNhLNn09ZhRgXFizkE",

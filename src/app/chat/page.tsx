@@ -120,7 +120,7 @@ export default function ChatPage() {
               {messages.length === 0 ? (
                 <div className={styles.welcomeScreen}>
                   <div className={styles.welcomeLogo}>
-                    <span>AI</span>
+                    <span>LA</span>
                   </div>
                   
                   <h1 className={styles.welcomeTitle}>
@@ -162,7 +162,7 @@ export default function ChatPage() {
                       <div className={styles.messageContent}>
                         {message.type === 'assistant' && (
                           <div className={styles.assistantAvatar}>
-                            <span>AI</span>
+                            <img src="/logo.png" alt="AI" className={styles.avatarImage} />
                           </div>
                         )}
                         <div className={styles.messageText}>

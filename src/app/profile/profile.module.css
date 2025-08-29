@@ -1,0 +1,547 @@
+/* CSS Variables for reusability */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-dark: #1f2937;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-primary: #0891b2;
+  --accent-hover: #0e7490;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #16a34a;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #dc2626;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --transition-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode styles applied to local classes */
+.darkMode .pageContainer {
+  background: var(--bg-dark);
+}
+
+.darkMode .profileCard {
+  background: #2d3748;
+}
+
+.darkMode .pageTitle,
+.darkMode .fieldLabel,
+.darkMode .statValue,
+.darkMode .fieldValue {
+  color: #f3f4f6;
+}
+
+.darkMode .pageDescription,
+.darkMode .statLabel {
+  color: #9ca3af;
+}
+
+.darkMode .profileCard {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2);
+}
+
+.darkMode .fieldInput {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.darkMode .actionButtons {
+  border-top-color: #4b5563;
+}
+
+.darkMode .statsSection {
+  border-top-color: #4b5563;
+}
+
+/* Page Layout */
+.pageContainer {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  transition: background 0.3s var(--transition-easing);
+}
+
+.mainContent {
+  display: flex;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+  padding: 1.5rem;
+  margin-left: 0;
+  transition: margin-left 0.3s var(--transition-easing);
+}
+
+@media (min-width: 1024px) {
+  .content {
+    margin-left: 16rem;
+    padding: 2rem;
+  }
+}
+
+.container {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+/* Page Header */
+.pageHeader {
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.pageDescription {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+/* Alert Messages */
+.alertError,
+.alertSuccess {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  transition: opacity 0.3s var(--transition-easing);
+}
+
+.alertError {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.alertSuccess {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+
+.alertIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.alertCloseButton {
+  margin-left: auto;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s var(--transition-easing);
+}
+
+.alertCloseButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.alertCloseIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Profile Card */
+.profileCard {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: box-shadow 0.3s var(--transition-easing);
+}
+
+/* Avatar Section */
+.avatarSection {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #14b8a6 100%);
+  padding: 3rem 2rem;
+  text-align: center;
+  color: white;
+  position: relative;
+}
+
+.avatarContainer {
+  position: relative;
+  width: 12rem;
+  height: 12rem;
+  margin: 0 auto 2rem;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid white;
+  transition: all 0.3s var(--transition-easing);
+}
+
+.avatarContainer:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+.avatarContainer.uploading {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.avatarContainer.uploading:hover {
+  transform: none;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.defaultAvatar {
+  width: 100%;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 1rem;
+}
+
+.avatarOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s var(--transition-easing);
+  border-radius: 50%;
+}
+
+.avatarContainer:hover .avatarOverlay {
+  opacity: 1;
+}
+
+.avatarContainer.uploading .avatarOverlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.cameraIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.avatarText {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Upload Progress */
+.uploadProgress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressCircle {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: conic-gradient(#ffffff 0deg, transparent 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progressFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  mask: radial-gradient(circle, transparent 65%, white 66%);
+  -webkit-mask: radial-gradient(circle, transparent 65%, white 66%);
+}
+
+.progressText {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  z-index: 10;
+}
+
+.fileInput {
+  display: none;
+}
+
+.avatarInfo {
+  text-align: center;
+}
+
+.userInfoSection {
+  padding: 2rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.infoFields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fieldLabel {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.fieldInput {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s var(--transition-easing);
+  background: white;
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.fieldInput:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.fieldValue {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.verifiedBadge,
+.unverifiedBadge {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.verifiedBadge {
+  color: var(--success-text);
+}
+
+.unverifiedBadge {
+  color: var(--error-text);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Buttons */
+.editButton,
+.saveButton,
+.cancelButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--transition-easing);
+  font-size: 0.875rem;
+}
+
+.editButton {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.editButton:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.editButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.saveButton {
+  background: #059669;
+  color: white;
+}
+
+.saveButton:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.saveButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cancelButton {
+  background: #6b7280;
+  color: white;
+}
+
+.cancelButton:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+.cancelButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.buttonIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Account Statistics */
+.statsSection {
+  padding: 2rem;
+  border-top: 1px solid #e5e7eb;
+  background: var(--bg-primary);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.statCard {
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.statValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Loading States */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s var(--transition-easing) infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .content {
+    padding: 1rem;
+  }
+  
+  .avatarContainer {
+    width: 10rem;
+    height: 10rem;
+  }
+  
+  .userName {
+    font-size: 1.5rem;
+  }
+  
+  .userRole {
+    font-size: 1rem;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+  }
+  
+  .editButton,
+  .saveButton,
+  .cancelButton {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .cameraIcon {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .progressCircle {
+    width: 3rem;
+    height: 3rem;
+  }
+  
+  .avatarText {
+    font-size: 0.875rem;
+  }
+}

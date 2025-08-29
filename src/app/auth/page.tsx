@@ -14,10 +14,10 @@ import styles from './auth.module.css';
 export default function AuthPage() {
   const router = useRouter();
   const { login, register, loginWithGoogle, loginWithFacebook } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [isLogin, setIsLogin] = useState(true); // Trạng thái đăng nhập/đăng ký
+  const [showPassword, setShowPassword] = useState(false); // Hiển thị/ẩn mật khẩu
+  const [loading, setLoading] = useState(false); // Trạng thái đang tải
+  const [error, setError] = useState(''); // Lưu thông báo lỗi
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,6 +26,7 @@ export default function AuthPage() {
     company: ''
   });
 
+  // Xử lý gửi biểu mẫu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -33,11 +34,11 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        // Login
+        // Đăng nhập
         await login(formData.email, formData.password);
         router.push('/chat');
       } else {
-        // Register
+        // Đăng ký
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Mật khẩu xác nhận không khớp');
         }
@@ -57,6 +58,7 @@ export default function AuthPage() {
     } catch (err: any) {
       let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
       
+      // Xử lý các mã lỗi cụ thể
       switch (err.code) {
         case 'auth/user-not-found':
           errorMessage = 'Không tìm thấy tài khoản với email này.';
@@ -83,6 +85,7 @@ export default function AuthPage() {
     }
   };
 
+  // Xử lý đăng nhập bằng Google
   const handleGoogleLogin = async () => {
     setLoading(true);
     setError('');
@@ -97,6 +100,7 @@ export default function AuthPage() {
     }
   };
 
+  // Xử lý đăng nhập bằng Facebook
   const handleFacebookLogin = async () => {
     setLoading(true);
     setError('');
@@ -115,7 +119,7 @@ export default function AuthPage() {
     <div className={styles.authContainer}>
       <div className={styles.authForm}>
         <div className={styles.formWrapper}>
-          {/* Logo and title */}
+          {/* Logo và tiêu đề */}
           <div className={styles.logoSection}>
             <div className={styles.logoIcon}>
               <span>AI</span>
@@ -128,7 +132,7 @@ export default function AuthPage() {
             </p>
           </div>
 
-          {/* Error message */}
+          {/* Thông báo lỗi */}
           {error && (
             <div className={styles.errorMessage}>
               <ExclamationCircleIcon />
@@ -136,7 +140,7 @@ export default function AuthPage() {
             </div>
           )}
 
-          {/* Social login buttons */}
+          {/* Nút đăng nhập mạng xã hội */}
           <div className={styles.socialButtons}>
             <button
               onClick={handleGoogleLogin}
@@ -168,7 +172,7 @@ export default function AuthPage() {
             <span>Hoặc</span>
           </div>
 
-          {/* Email/Password form */}
+          {/* Biểu mẫu Email/Mật khẩu */}
           <form className={styles.form} onSubmit={handleSubmit}>
             {!isLogin && (
               <div className={styles.inputGroup}>
@@ -246,7 +250,7 @@ export default function AuthPage() {
             </button>
           </form>
 
-          {/* Business registration */}
+          {/* Đăng ký doanh nghiệp */}
           <div className={styles.businessSection}>
             <p className={styles.businessText}>
               Đăng ký AI Tra cứu Luật cho doanh nghiệp?
@@ -256,7 +260,7 @@ export default function AuthPage() {
             </button>
           </div>
 
-          {/* Terms and switch */}
+          {/* Điều khoản và chuyển đổi */}
           <div className={styles.footer}>
             <p className={styles.terms}>
               Bằng việc đăng ký, bạn đồng ý với{' '}
@@ -277,9 +281,9 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* Chat preview - existing code */}
+      {/* Xem trước trò chuyện */}
       <div className={styles.chatPreview}>
-        {/* Keep existing preview content */}
+        {/* Giữ nội dung xem trước hiện tại */}
       </div>
     </div>
   );

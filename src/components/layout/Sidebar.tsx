@@ -10,7 +10,8 @@ import {
   QuestionMarkCircleIcon,
   PlusIcon,
   SparklesIcon,
-  ClockIcon  // ← QUAN TRỌNG: Đảm bảo import này có
+  ClockIcon,
+  UserCircleIcon  // Thêm icon cho Profile
 } from '@heroicons/react/24/outline';
 import styles from './Sidebar.module.css';
 
@@ -30,7 +31,7 @@ const navigationItems = [
   {
     id: 'conversations',
     title: 'Lịch sử trò chuyện',
-    icon: ClockIcon, // ← QUAN TRỌNG: Sử dụng ClockIcon
+    icon: ClockIcon,
     href: '/conversations',
     badge: null
   },
@@ -54,6 +55,13 @@ const navigationItems = [
     icon: SparklesIcon,
     href: '/procedures',
     badge: 'MỚI'
+  },
+  {
+    id: 'profile',  // Thêm menu Profile
+    title: 'Thông tin cá nhân',
+    icon: UserCircleIcon,
+    href: '/profile',
+    badge: null
   },
   {
     id: 'support',
@@ -131,11 +139,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className={styles.sidebarFooter}>
             <div className={styles.footerContent}>
               <div className={styles.hotline}>
-                <strong>Hotline: 19005001</strong>
+                <strong>Hotline: 19008889</strong>
               </div>
               <div className={styles.company}>
                 Phát triển bởi<br />
-                <strong>VIỆN CÔNG NGHỆ BLOCKCHAIN VÀ TRÍ TUỆ NHÂN TẠO ABAII</strong>
+                <strong>HMP Ptit team - Nhóm đồ án Học viện Công nghệ Bưu chính viễn thông</strong>
               </div>
             </div>
           </div>
