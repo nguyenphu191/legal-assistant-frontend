@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các thành phần và hook cần thiết từ React và Next.js
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,15 +12,17 @@ import {
   PlusIcon,
   SparklesIcon,
   ClockIcon,
-  UserCircleIcon  // Thêm icon cho Profile
+  UserCircleIcon  
 } from '@heroicons/react/24/outline';
 import styles from './Sidebar.module.css';
 
+// Định nghĩa giao diện cho props của thành phần Sidebar
 interface SidebarProps {
   isOpen: boolean;
   onClose?: () => void;
 }
 
+// Danh sách các mục điều hướng
 const navigationItems = [
   {
     id: 'chat',
@@ -57,7 +60,7 @@ const navigationItems = [
     badge: 'MỚI'
   },
   {
-    id: 'profile',  // Thêm menu Profile
+    id: 'profile',  
     title: 'Thông tin cá nhân',
     icon: UserCircleIcon,
     href: '/profile',
@@ -72,18 +75,23 @@ const navigationItems = [
   }
 ];
 
+// Thành phần Sidebar của ứng dụng
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  // Lấy đường dẫn hiện tại
   const pathname = usePathname();
+  // Lấy thông tin người dùng từ AuthContext
   const { currentUser } = useAuth();
 
+  // Xử lý tạo cuộc trò chuyện mới
   const handleNewChat = () => {
-    // Logic to start new chat conversation
+    // Logic để bắt đầu một cuộc trò chuyện mới
     window.location.href = '/chat';
   };
 
+  // Giao diện người dùng của Sidebar
   return (
     <>
-      {/* Overlay for mobile */}
+      {/* Lớp phủ cho giao diện mobile */}
       {isOpen && (
         <div
           className={styles.overlay}
@@ -91,10 +99,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Thanh bên */}
       <div className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
         <div className="flex flex-col h-full">
-          {/* Header */}
+          {/* Phần đầu Sidebar */}
           <div className={styles.sidebarHeader}>
             <button 
               className={styles.newChatButton}
@@ -105,7 +113,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </button>
           </div>
 
-          {/* Navigation */}
+          {/* Điều hướng */}
           <nav className={styles.navigation}>
             <ul className={styles.navigationList}>
               {navigationItems.map((item) => {
@@ -135,7 +143,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </ul>
           </nav>
 
-          {/* Footer */}
+          {/* Phần chân Sidebar */}
           <div className={styles.sidebarFooter}>
             <div className={styles.footerContent}>
               <div className={styles.hotline}>

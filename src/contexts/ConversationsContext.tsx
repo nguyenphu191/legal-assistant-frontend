@@ -1,37 +1,11 @@
 'use client';
 
+// Nhập các hook và thành phần từ React, cùng với AuthContext
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { Message, Conversation, ConversationStats } from '../types'; // Adjusted path to match the correct location
 
-export interface Message {
-  id: string;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
-export interface Conversation {
-  id: string;
-  title: string;
-  messages: Message[];
-  createdAt: Date;
-  updatedAt: Date;
-  preview: string;
-  messageCount: number;
-  isFavorite?: boolean; // Thêm tính năng favorite
-  tags?: string[]; // Thêm tags
-}
-
-// Thêm interface cho statistics
-export interface ConversationStats {
-  total: number;
-  today: number;
-  thisWeek: number;
-  thisMonth: number;
-  avgMessagesPerConversation: number;
-  favoriteCount: number;
-}
-
+// Định nghĩa giao diện cho context của cuộc trò chuyện
 interface ConversationsContextType {
   conversations: Conversation[];
   activeConversationId: string | null;
@@ -39,38 +13,46 @@ interface ConversationsContextType {
   stats: ConversationStats;
   createConversation: (title?: string, firstMessage?: Message) => string;
   updateConversation: (id: string, messages: Message[]) => void;
-  updateConversationTitle: (id: string, newTitle: string) => void; // Thêm function edit title
+  updateConversationTitle: (id: string, newTitle: string) => void; // Hàm chỉnh sửa tiêu đề
   deleteConversation: (id: string) => void;
-  toggleFavorite: (id: string) => void; // Thêm function favorite
+  toggleFavorite: (id: string) => void; // Hàm chuyển đổi trạng thái yêu thích
   getConversation: (id: string) => Conversation | undefined;
   setActiveConversation: (id: string | null) => void;
   searchConversations: (query: string) => Conversation[];
-  exportConversations: () => void; // Thêm export
-  importConversations: (data: string) => boolean; // Thêm import
-  bulkDeleteConversations: (ids: string[]) => void; // Thêm bulk delete
+  exportConversations: () => void; // Hàm xuất cuộc trò chuyện
+  importConversations: (data: string) => boolean; // Hàm nhập cuộc trò chuyện
+  bulkDeleteConversations: (ids: string[]) => void; // Hàm xóa hàng loạt
 }
 
+// Tạo context cho cuộc trò chuyện
 const ConversationsContext = createContext<ConversationsContextType | undefined>(undefined);
 
+// Hook để sử dụng ConversationsContext
 export function useConversations() {
   const context = useContext(ConversationsContext);
   if (!context) {
-    throw new Error('useConversations must be used within ConversationsProvider');
+    throw new Error('useConversations phải được sử dụng bên trong ConversationsProvider');
   }
   return context;
 }
 
+// Định nghĩa giao diện cho props của ConversationsProvider
 interface ConversationsProviderProps {
   children: ReactNode;
 }
 
+// Thành phần cung cấp context cho cuộc trò chuyện
 export function ConversationsProvider({ children }: ConversationsProviderProps) {
+  // Lấy thông tin người dùng hiện tại từ AuthContext
   const { currentUser } = useAuth();
+  // Quản lý danh sách các cuộc trò chuyện
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  // Quản lý ID của cuộc trò chuyện đang hoạt động
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  // Quản lý trạng thái đang tải
   const [loading, setLoading] = useState(true);
 
-  // Calculate statistics
+  // Tính toán thống kê cuộc trò chuyện
   const calculateStats = (convs: Conversation[]): ConversationStats => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -95,14 +77,15 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     };
   };
 
+  // Tính toán thống kê từ danh sách cuộc trò chuyện
   const stats = calculateStats(conversations);
 
-  // Storage key with user ID
+  // Tạo khóa lưu trữ với ID người dùng
   const getStorageKey = () => {
     return currentUser ? `conversations_${currentUser.uid}` : 'conversations_guest';
   };
 
-  // Load conversations from localStorage
+  // Tải cuộc trò chuyện từ localStorage
   const loadConversations = () => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(getStorageKey());
@@ -120,28 +103,28 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
           }));
           return conversationsWithDates;
         } catch (error) {
-          console.error('Error loading conversations:', error);
+          console.error('Lỗi khi tải cuộc trò chuyện:', error);
         }
       }
     }
     return [];
   };
 
-  // Save conversations to localStorage
+  // Lưu cuộc trò chuyện vào localStorage
   const saveConversations = (convs: Conversation[]) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(getStorageKey(), JSON.stringify(convs));
     }
   };
 
-  // Initialize conversations
+  // Khởi tạo cuộc trò chuyện
   useEffect(() => {
     const loadedConversations = loadConversations();
     setConversations(loadedConversations);
     setLoading(false);
   }, [currentUser]);
 
-  // Generate conversation title from first message
+  // Tạo tiêu đề cuộc trò chuyện từ tin nhắn đầu tiên
   const generateTitle = (messages: Message[]): string => {
     const firstUserMessage = messages.find(m => m.type === 'user');
     if (firstUserMessage) {
@@ -152,7 +135,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     return `Cuộc trò chuyện ${new Date().toLocaleDateString('vi-VN')}`;
   };
 
-  // Generate preview from messages
+  // Tạo nội dung xem trước từ tin nhắn
   const generatePreview = (messages: Message[]): string => {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage) {
@@ -163,7 +146,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     return 'Cuộc trò chuyện trống';
   };
 
-  // Create new conversation
+  // Tạo cuộc trò chuyện mới
   const createConversation = (title?: string, firstMessage?: Message): string => {
     const now = new Date();
     const id = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -187,7 +170,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     return id;
   };
 
-  // Update conversation messages
+  // Cập nhật tin nhắn của cuộc trò chuyện
   const updateConversation = (id: string, messages: Message[]) => {
     const updatedConversations = conversations.map(conv => {
       if (conv.id === id) {
@@ -210,7 +193,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     saveConversations(updatedConversations);
   };
 
-  // Update conversation title
+  // Cập nhật tiêu đề cuộc trò chuyện
   const updateConversationTitle = (id: string, newTitle: string) => {
     const updatedConversations = conversations.map(conv => {
       if (conv.id === id) {
@@ -223,7 +206,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     saveConversations(updatedConversations);
   };
 
-  // Toggle favorite status
+  // Chuyển đổi trạng thái yêu thích
   const toggleFavorite = (id: string) => {
     const updatedConversations = conversations.map(conv => {
       if (conv.id === id) {
@@ -236,7 +219,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     saveConversations(updatedConversations);
   };
 
-  // Delete conversation
+  // Xóa cuộc trò chuyện
   const deleteConversation = (id: string) => {
     const updatedConversations = conversations.filter(conv => conv.id !== id);
     setConversations(updatedConversations);
@@ -247,7 +230,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     }
   };
 
-  // Bulk delete conversations
+  // Xóa hàng loạt cuộc trò chuyện
   const bulkDeleteConversations = (ids: string[]) => {
     const updatedConversations = conversations.filter(conv => !ids.includes(conv.id));
     setConversations(updatedConversations);
@@ -258,7 +241,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     }
   };
 
-  // Export conversations
+  // Xuất cuộc trò chuyện
   const exportConversations = () => {
     const dataStr = JSON.stringify(conversations, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -273,24 +256,24 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     URL.revokeObjectURL(url);
   };
 
-  // Import conversations
+  // Nhập cuộc trò chuyện
   const importConversations = (data: string): boolean => {
     try {
       const importedData = JSON.parse(data);
       if (!Array.isArray(importedData)) {
-        throw new Error('Invalid format');
+        throw new Error('Định dạng không hợp lệ');
       }
 
-      // Validate structure
+      // Kiểm tra cấu trúc dữ liệu
       const validConversations = importedData.filter(conv => 
         conv.id && conv.title && Array.isArray(conv.messages)
       );
 
       if (validConversations.length === 0) {
-        throw new Error('No valid conversations found');
+        throw new Error('Không tìm thấy cuộc trò chuyện hợp lệ');
       }
 
-      // Convert dates and merge with existing
+      // Chuyển đổi ngày tháng và hợp nhất với dữ liệu hiện tại
       const conversationsWithDates = validConversations.map((conv: any) => ({
         ...conv,
         createdAt: new Date(conv.createdAt),
@@ -309,19 +292,22 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
 
       return true;
     } catch (error) {
-      console.error('Error importing conversations:', error);
+      console.error('Lỗi khi nhập cuộc trò chuyện:', error);
       return false;
     }
   };
 
+  // Lấy thông tin một cuộc trò chuyện theo ID
   const getConversation = (id: string): Conversation | undefined => {
     return conversations.find(conv => conv.id === id);
   };
 
+  // Đặt cuộc trò chuyện đang hoạt động
   const setActiveConversation = (id: string | null) => {
     setActiveConversationId(id);
   };
 
+  // Tìm kiếm cuộc trò chuyện
   const searchConversations = (query: string): Conversation[] => {
     if (!query.trim()) return conversations;
     
@@ -329,11 +315,12 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     return conversations.filter(conv => 
       conv.title.toLowerCase().includes(lowerQuery) ||
       conv.preview.toLowerCase().includes(lowerQuery) ||
-      conv.messages.some(msg => msg.content.toLowerCase().includes(lowerQuery)) ||
-      conv.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      conv.messages.some((msg: { content: string; }) => msg.content.toLowerCase().includes(lowerQuery)) ||
+      conv.tags?.some((tag: string) => tag.toLowerCase().includes(lowerQuery))
     );
   };
 
+  // Giá trị context cung cấp
   const value = {
     conversations,
     activeConversationId,
@@ -352,6 +339,7 @@ export function ConversationsProvider({ children }: ConversationsProviderProps) 
     importConversations
   };
 
+  // Giao diện người dùng của ConversationsProvider
   return (
     <ConversationsContext.Provider value={value}>
       {children}

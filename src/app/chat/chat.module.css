@@ -61,7 +61,7 @@
 .welcomeLogo {
   width: 6rem;
   height: 6rem;
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+  /* background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); */
   border-radius: 1rem;
   display: flex;
   align-items: center;
@@ -278,8 +278,8 @@
 /* Avatars */
 .assistantAvatar,
 .userAvatar {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -288,9 +288,14 @@
   font-weight: 500;
   font-size: 0.875rem;
 }
-
+.logoImage{
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .assistantAvatar {
-  background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+  /* background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%); */
   color: white;
 }
 .avatarImage{

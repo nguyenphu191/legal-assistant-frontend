@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các hook từ React và giao diện Conversation
 import { useState, useRef, useEffect } from 'react';
 import { Conversation } from '@/contexts/ConversationsContext';
 import {
@@ -15,6 +16,7 @@ import {
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import styles from './ConversationItem.module.css';
 
+// Định nghĩa giao diện cho props của thành phần ConversationItem
 interface ConversationItemProps {
   conversation: Conversation;
   onClick: () => void;
@@ -25,6 +27,7 @@ interface ConversationItemProps {
   onSelect?: (selected: boolean) => void;
 }
 
+// Thành phần hiển thị một cuộc trò chuyện trong danh sách
 export default function ConversationItem({ 
   conversation, 
   onClick, 
@@ -34,11 +37,16 @@ export default function ConversationItem({
   isSelected = false,
   onSelect
 }: ConversationItemProps) {
+  // Quản lý trạng thái hiển thị menu
   const [showMenu, setShowMenu] = useState(false);
+  // Quản lý trạng thái chỉnh sửa tiêu đề
   const [isEditing, setIsEditing] = useState(false);
+  // Quản lý giá trị tiêu đề khi chỉnh sửa
   const [editTitle, setEditTitle] = useState(conversation.title);
+  // Tham chiếu đến ô nhập liệu chỉnh sửa tiêu đề
   const editInputRef = useRef<HTMLInputElement>(null);
 
+  // Tự động focus và chọn nội dung ô nhập liệu khi chỉnh sửa
   useEffect(() => {
     if (isEditing && editInputRef.current) {
       editInputRef.current.focus();
@@ -46,6 +54,7 @@ export default function ConversationItem({
     }
   }, [isEditing]);
 
+  // Định dạng ngày tháng cho hiển thị
   const formatDate = (date: Date): string => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -68,17 +77,20 @@ export default function ConversationItem({
     }
   };
 
+  // Xử lý nhấp vào nút menu
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
   };
 
+  // Xử lý xóa cuộc trò chuyện
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete();
     setShowMenu(false);
   };
 
+  // Xử lý bắt đầu chỉnh sửa tiêu đề
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsEditing(true);
@@ -86,12 +98,14 @@ export default function ConversationItem({
     setShowMenu(false);
   };
 
+  // Xử lý chuyển đổi trạng thái yêu thích
   const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleFavorite();
     setShowMenu(false);
   };
 
+  // Xử lý lưu tiêu đề mới
   const handleSaveTitle = () => {
     if (editTitle.trim() && editTitle !== conversation.title) {
       onUpdateTitle(editTitle.trim());
@@ -99,11 +113,13 @@ export default function ConversationItem({
     setIsEditing(false);
   };
 
+  // Xử lý hủy chỉnh sửa tiêu đề
   const handleCancelEdit = () => {
     setEditTitle(conversation.title);
     setIsEditing(false);
   };
 
+  // Xử lý phím nhấn trong ô nhập liệu
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSaveTitle();
@@ -112,6 +128,7 @@ export default function ConversationItem({
     }
   };
 
+  // Xử lý chọn/bỏ chọn cuộc trò chuyện
   const handleSelectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation();
     if (onSelect) {
@@ -119,9 +136,10 @@ export default function ConversationItem({
     }
   };
 
+  // Giao diện người dùng của thành phần
   return (
     <>
-      {/* Overlay to close menu */}
+      {/* Lớp phủ để đóng menu */}
       {showMenu && (
         <div 
           className={styles.menuOverlay}
@@ -133,7 +151,7 @@ export default function ConversationItem({
         className={`${styles.conversationItem} ${isSelected ? styles.selected : ''}`}
         onClick={onClick}
       >
-        {/* Selection checkbox for bulk operations */}
+        {/* Hộp kiểm chọn cho thao tác hàng loạt */}
         {onSelect && (
           <div className={styles.selectionArea}>
             <input
@@ -250,7 +268,7 @@ export default function ConversationItem({
             </span>
           </div>
           
-          {/* Tags */}
+          {/* Nhãn (tags) */}
           {conversation.tags && conversation.tags.length > 0 && (
             <div className={styles.tagsContainer}>
               {conversation.tags.slice(0, 3).map((tag, index) => (

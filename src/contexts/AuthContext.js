@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các hook từ React và các hàm từ Firebase
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
@@ -13,8 +14,10 @@ import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db, googleProvider, facebookProvider } from '../configs/firebase';
 import { uploadToCloudinary, validateImageFile, forceRefreshCloudinaryUrl } from '../utils/cloudinary';
 
+// Tạo context cho xác thực
 const AuthContext = createContext();
 
+// Hook để sử dụng AuthContext
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
@@ -23,9 +26,13 @@ export function useAuth() {
   return context;
 }
 
+// Thành phần cung cấp context xác thực
 export function AuthProvider({ children }) {
+  // Quản lý trạng thái người dùng hiện tại
   const [currentUser, setCurrentUser] = useState(null);
+  // Quản lý thông tin hồ sơ người dùng
   const [userProfile, setUserProfile] = useState(null);
+  // Quản lý trạng thái đang tải
   const [loading, setLoading] = useState(true);
 
   // Tạo tài liệu người dùng trong Firestore
@@ -53,16 +60,16 @@ export function AuthProvider({ children }) {
         await setDoc(userRef, userData);
         setUserProfile(userData);
         
-        console.log('✅ Created user document in Firestore:', user.uid);
+        console.log('Created user document in Firestore:', user.uid);
       } catch (error) {
-        console.error('❌ Lỗi khi tạo tài liệu người dùng:', error);
+        console.error('Lỗi khi tạo tài liệu người dùng:', error);
       }
     }
     
     return userRef;
   };
 
-  // Lấy user profile từ Firestore
+  // Lấy hồ sơ người dùng từ Firestore
   const getUserProfile = async (user) => {
     if (!user) return null;
     
@@ -78,50 +85,50 @@ export function AuthProvider({ children }) {
       
       return null;
     } catch (error) {
-      console.error('❌ Error getting user profile:', error);
+      console.error('Lỗi khi lấy hồ sơ người dùng:', error);
       return null;
     }
   };
 
-  // ✨ IMPROVED: Force refresh user data để update UI
+  // Làm mới dữ liệu người dùng để cập nhật giao diện
   const refreshUserData = async (user) => {
     if (!user) return;
     
     try {
-      console.log('🔄 Refreshing user data for UI update');
+      console.log('Refreshing user data for UI update');
       
-      // Force reload user từ Firebase Auth
+      // Làm mới dữ liệu người dùng từ Firebase Auth
       await user.reload();
       
-      // Lấy fresh data từ Firestore
+      // Lấy dữ liệu mới từ Firestore
       const freshProfile = await getUserProfile(user);
       
-      // Trigger re-render bằng cách update state
-      setCurrentUser({...user}); // Create new object reference
+      // Kích hoạt render lại bằng cách cập nhật state
+      setCurrentUser({...user}); // Tạo tham chiếu đối tượng mới
       
       if (freshProfile) {
-        setUserProfile({...freshProfile}); // Create new object reference
+        setUserProfile({...freshProfile}); // Tạo tham chiếu đối tượng mới
       }
       
-      console.log('✅ User data refreshed successfully');
+      console.log('User data refreshed successfully');
       
     } catch (error) {
-      console.error('❌ Error refreshing user data:', error);
+      console.error('Lỗi khi làm mới dữ liệu người dùng:', error);
     }
   };
 
-  // ✨ IMPROVED: Cập nhật thông tin profile với better state management
+  // Cập nhật thông tin hồ sơ với quản lý trạng thái cải tiến
   const updateUserProfile = async (updates) => {
     if (!currentUser) {
       throw new Error('Người dùng chưa đăng nhập');
     }
 
     if (!currentUser.uid || typeof currentUser.getIdToken !== 'function') {
-      console.error('❌ Invalid currentUser object:', currentUser);
+      console.error('Invalid currentUser object:', currentUser);
       throw new Error('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.');
     }
 
-    console.log('🚀 updateUserProfile started:', { 
+    console.log('updateUserProfile started:', { 
       userId: currentUser.uid,
       updates: Object.keys(updates),
     });
@@ -131,17 +138,17 @@ export function AuthProvider({ children }) {
       let updatedData = { ...updates };
       let newPhotoURL = null;
 
-      // ✨ XỬ LÝ UPLOAD AVATAR VỚI CACHE BUSTING
+      // Xử lý tải lên ảnh đại diện với bypass cache
       if (updates.avatar) {
         const file = updates.avatar;
         
-        console.log('📸 Processing avatar upload:', {
+        console.log('Processing avatar upload:', {
           name: file.name,
           size: file.size,
           type: file.type
         });
         
-        // Validate file
+        // Kiểm tra file
         const validation = validateImageFile(file, {
           maxSizeBytes: 10 * 1024 * 1024,
           allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
@@ -152,27 +159,27 @@ export function AuthProvider({ children }) {
         }
 
         try {
-          // ✨ UPLOAD VỚI UNIQUE PUBLIC_ID VÀ CACHE BUSTING
+          // Tải lên với public_id duy nhất và bypass cache
           newPhotoURL = await uploadToCloudinary(file, 'avatars', {
             public_id: `user_${currentUser.uid}`,
             tags: 'avatar,profile'
           });
 
-          console.log('✅ Cloudinary upload successful:', newPhotoURL);
+          console.log('Cloudinary upload successful:', newPhotoURL);
           
-          // ✨ FORCE REFRESH URL ĐỂ BYPASS CACHE
+          // Làm mới URL để bypass cache
           const refreshedPhotoURL = forceRefreshCloudinaryUrl(newPhotoURL);
           
-          // Update Firebase Auth profile
+          // Cập nhật hồ sơ Firebase Auth
           await updateProfile(currentUser, { photoURL: refreshedPhotoURL });
-          console.log('✅ Updated Firebase Auth profile');
+          console.log('Updated Firebase Auth profile');
           
-          // Set updatedData for Firestore
+          // Cập nhật dữ liệu cho Firestore
           updatedData = { ...updates, photoURL: refreshedPhotoURL };
           delete updatedData.avatar;
 
         } catch (uploadError) {
-          console.error('❌ Upload failed:', uploadError);
+          console.error('Upload failed:', uploadError);
           
           let errorMessage = 'Lỗi khi upload avatar: ';
           
@@ -190,35 +197,35 @@ export function AuthProvider({ children }) {
         }
       }
 
-      // Update displayName in Firebase Auth if provided
+      // Cập nhật displayName trong Firebase Auth nếu có
       if (updates.displayName) {
         await updateProfile(currentUser, { 
           displayName: updates.displayName,
           ...(newPhotoURL && { photoURL: newPhotoURL })
         });
-        console.log('✅ Updated displayName in Firebase Auth');
+        console.log('Updated displayName in Firebase Auth');
       }
 
-      // ✨ UPDATE FIRESTORE VỚI TIMESTAMP
-      console.log('📝 Updating Firestore with:', Object.keys(updatedData));
+      // Cập nhật Firestore với timestamp
+      console.log('Updating Firestore with:', Object.keys(updatedData));
       
       await updateDoc(userRef, {
         ...updatedData,
         updatedAt: new Date()
       });
       
-      console.log('✅ Firestore updated successfully');
+      console.log('Firestore updated successfully');
 
-      // ✨ FORCE REFRESH USER DATA ĐỂ UPDATE UI
+      // Làm mới dữ liệu người dùng để cập nhật giao diện
       setTimeout(async () => {
         await refreshUserData(currentUser);
-        console.log('🔄 UI refreshed with new data');
-      }, 500); // Small delay để đảm bảo Firestore đã sync
+        console.log('UI refreshed with new data');
+      }, 500); // Độ trễ nhỏ để đảm bảo Firestore đã đồng bộ
 
-      console.log('🎉 updateUserProfile completed successfully');
+      console.log('updateUserProfile completed successfully');
 
     } catch (error) {
-      console.error('❌ Error in updateUserProfile:', error);
+      console.error('Error in updateUserProfile:', error);
       throw error;
     }
   };
@@ -226,16 +233,16 @@ export function AuthProvider({ children }) {
   // Đăng ký với email và mật khẩu
   const register = async (email, password, name, company = '') => {
     try {
-      console.log('📝 Registering new user:', email);
+      console.log('Registering new user:', email);
       
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(user, { displayName: name });
       await createUserDocument(user, { name, company });
       
-      console.log('✅ User registration completed');
+      console.log('User registration completed');
       return user;
     } catch (error) {
-      console.error('❌ Registration error:', error);
+      console.error('Registration error:', error);
       throw error;
     }
   };
@@ -243,12 +250,12 @@ export function AuthProvider({ children }) {
   // Đăng nhập với email và mật khẩu
   const login = async (email, password) => {
     try {
-      console.log('🔐 Logging in user:', email);
+      console.log('Logging in user:', email);
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Login successful');
+      console.log('Login successful');
       return user;
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       throw error;
     }
   };
@@ -256,13 +263,13 @@ export function AuthProvider({ children }) {
   // Đăng nhập với Google
   const loginWithGoogle = async () => {
     try {
-      console.log('🔐 Google login started');
+      console.log('Google login started');
       const { user } = await signInWithPopup(auth, googleProvider);
       await createUserDocument(user);
-      console.log('✅ Google login successful');
+      console.log('Google login successful');
       return user;
     } catch (error) {
-      console.error('❌ Google login error:', error);
+      console.error('Google login error:', error);
       throw error;
     }
   };
@@ -270,13 +277,13 @@ export function AuthProvider({ children }) {
   // Đăng nhập với Facebook
   const loginWithFacebook = async () => {
     try {
-      console.log('🔐 Facebook login started');
+      console.log('Facebook login started');
       const { user } = await signInWithPopup(auth, facebookProvider);
       await createUserDocument(user);
-      console.log('✅ Facebook login successful');
+      console.log('Facebook login successful');
       return user;
     } catch (error) {
-      console.error('❌ Facebook login error:', error);
+      console.error('Facebook login error:', error);
       throw error;
     }
   };
@@ -284,22 +291,22 @@ export function AuthProvider({ children }) {
   // Đăng xuất
   const logout = async () => {
     try {
-      console.log('👋 Logging out user');
+      console.log('Logging out user');
       await signOut(auth);
       setUserProfile(null);
-      console.log('✅ Logout successful');
+      console.log('Logout successful');
     } catch (error) {
-      console.error('❌ Logout error:', error);
+      console.error('Logout error:', error);
       throw error;
     }
   };
 
-  // ✨ IMPROVED: Auth state listener với better error handling
+  // Theo dõi trạng thái xác thực với xử lý lỗi cải tiến
   useEffect(() => {
-    console.log('🎯 Setting up auth state listener');
+    console.log('Setting up auth state listener');
     
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('🔄 Auth state changed:', user ? `User ${user.uid}` : 'No user');
+      console.log('Auth state changed:', user ? `User ${user.uid}` : 'No user');
       
       if (user) {
         try {
@@ -310,9 +317,9 @@ export function AuthProvider({ children }) {
             await createUserDocument(user);
           }
           
-          console.log('✅ User setup completed');
+          console.log('User setup completed');
         } catch (error) {
-          console.error('❌ Error loading user data:', error);
+          console.error('Error loading user data:', error);
           setCurrentUser(user);
         }
       } else {
@@ -324,12 +331,12 @@ export function AuthProvider({ children }) {
     });
 
     return () => {
-      console.log('🧹 Cleaning up auth state listener');
+      console.log('Cleaning up auth state listener');
       unsubscribe();
     };
   }, []);
 
-  // ✨ IMPROVED: Combined user object với better merging
+  // Kết hợp dữ liệu người dùng với xử lý hợp nhất cải tiến
   const combinedUser = currentUser ? {
     ...currentUser,
     ...(userProfile || {}),
@@ -340,6 +347,7 @@ export function AuthProvider({ children }) {
     photoURL: userProfile?.photoURL || currentUser.photoURL
   } : null;
 
+  // Giá trị context cung cấp
   const value = {
     currentUser: combinedUser,
     userProfile,
@@ -349,10 +357,11 @@ export function AuthProvider({ children }) {
     loginWithFacebook,
     logout,
     updateUserProfile,
-    refreshUserData, // ✨ NEW: Export refresh function
+    refreshUserData,
     loading
   };
 
+  // Giao diện người dùng của AuthProvider
   return (
     <AuthContext.Provider value={value}>
       {loading ? (

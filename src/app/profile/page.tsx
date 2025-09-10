@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các hook từ React, điều hướng và các thành phần cần thiết
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -16,30 +17,42 @@ import {
 } from '@heroicons/react/24/outline';
 import styles from './profile.module.css';
 
+// Định nghĩa giao diện cho dữ liệu biểu mẫu
 interface FormData {
   displayName: string;
   company: string;
   email: string;
 }
 
+// Thành phần chính của trang Hồ sơ
 export default function ProfilePage() {
+  // Lấy thông tin người dùng và các hàm cập nhật từ AuthContext
   const { currentUser, updateUserProfile, refreshUserData, loading } = useAuth();
   const router = useRouter();
+  // Tham chiếu đến input file để tải ảnh đại diện
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Quản lý trạng thái mở/đóng của thanh bên
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Quản lý trạng thái chỉnh sửa thông tin
   const [isEditing, setIsEditing] = useState(false);
+  // Quản lý trạng thái đang tải ảnh
   const [uploading, setUploading] = useState(false);
+  // Quản lý trạng thái đang lưu thay đổi
   const [saving, setSaving] = useState(false);
+  // Quản lý thông báo lỗi
   const [error, setError] = useState('');
+  // Quản lý thông báo thành công
   const [success, setSuccess] = useState('');
   
+  // Quản lý dữ liệu biểu mẫu
   const [formData, setFormData] = useState<FormData>({
     displayName: '',
     company: '',
     email: ''
   });
 
+  // Cập nhật dữ liệu biểu mẫu khi thông tin người dùng thay đổi
   useEffect(() => {
     if (currentUser) {
       setFormData({
@@ -50,6 +63,7 @@ export default function ProfilePage() {
     }
   }, [currentUser]);
 
+  // Xử lý thay đổi dữ liệu trong các trường nhập liệu
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -60,30 +74,33 @@ export default function ProfilePage() {
     setSuccess('');
   };
 
+  // Xử lý khi nhấp vào ảnh đại diện để mở chọn file
   const handleAvatarClick = () => {
     if (uploading) return;
     fileInputRef.current?.click();
   };
 
+  // Xử lý tải lên ảnh đại diện
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('📁 File selected:', {
+    // Ghi log thông tin file đã chọn
+    console.log('File selected:', {
       name: file.name,
       size: file.size,
       type: file.type,
       lastModified: new Date(file.lastModified).toISOString()
     });
 
-    // Validate file type
+    // Kiểm tra định dạng file
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       setError(`Vui lòng chọn file ảnh hợp lệ: ${allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ')}`);
       return;
     }
 
-    // Validate file size (10MB cho Cloudinary)
+    // Kiểm tra kích thước file (tối đa 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError('Kích thước file không được vượt quá 10MB');
       return;
@@ -94,35 +111,38 @@ export default function ProfilePage() {
     setSuccess('');
     
     try {
-      console.log('🚀 Starting upload for user:', currentUser?.uid);
+      // Ghi log bắt đầu tải lên
+      console.log('Starting upload for user:', currentUser?.uid);
       
       await updateUserProfile({ avatar: file });
       
-      setSuccess('🎉 Cập nhật avatar thành công!');
-      console.log('✅ Upload completed successfully');
+      setSuccess('Cập nhật avatar thành công!');
+      // Ghi log hoàn tất tải lên
+      console.log('Upload completed successfully');
       
       setTimeout(() => {
         setSuccess('');
       }, 2000);
 
     } catch (error: any) {
-      console.error('❌ Upload avatar error:', error);
+      // Ghi log lỗi khi tải lên
+      console.error('Upload avatar error:', error);
       
       let errorMessage = '';
       
       if (error.message.includes('Người dùng chưa đăng nhập')) {
-        errorMessage = '🔐 Vui lòng đăng nhập lại để tiếp tục';
+        errorMessage = 'Vui lòng đăng nhập lại để tiếp tục';
         setTimeout(() => router.push('/auth'), 2000);
       } else if (error.message.includes('File ảnh không hợp lệ')) {
-        errorMessage = '📸 File ảnh không hợp lệ. Vui lòng chọn ảnh khác';
+        errorMessage = 'File ảnh không hợp lệ. Vui lòng chọn ảnh khác';
       } else if (error.message.includes('File quá lớn')) {
-        errorMessage = '📏 File quá lớn. Tối đa 10MB';
+        errorMessage = 'File quá lớn. Tối đa 10MB';
       } else if (error.message.includes('Cấu hình Cloudinary')) {
-        errorMessage = '⚙️ Lỗi cấu hình hệ thống. Vui lòng liên hệ admin';
+        errorMessage = 'Lỗi cấu hình hệ thống. Vui lòng liên hệ admin';
       } else if (error.message.includes('Network')) {
-        errorMessage = '🌐 Lỗi kết nối. Vui lòng kiểm tra internet và thử lại';
+        errorMessage = 'Lỗi kết nối. Vui lòng kiểm tra internet và thử lại';
       } else {
-        errorMessage = `❌ ${error.message || 'Lỗi không xác định. Vui lòng thử lại'}`;
+        errorMessage = error.message || 'Lỗi không xác định. Vui lòng thử lại';
       }
       
       setError(errorMessage);
@@ -135,18 +155,20 @@ export default function ProfilePage() {
     }
   };
 
+  // Xử lý lưu thay đổi thông tin hồ sơ
   const handleSaveChanges = async () => {
     if (!formData.displayName.trim()) {
-      setError('📝 Tên hiển thị không được để trống');
+      setError('Tên hiển thị không được để trống');
       return;
     }
 
+    // Kiểm tra xem có thay đổi nào trong thông tin
     const hasChanges = 
       formData.displayName.trim() !== (currentUser?.displayName || '') ||
       formData.company.trim() !== (currentUser?.company || '');
 
     if (!hasChanges) {
-      setError('ℹ️ Không có thông tin nào được thay đổi');
+      setError('Không có thông tin nào được thay đổi');
       return;
     }
 
@@ -160,20 +182,22 @@ export default function ProfilePage() {
         company: formData.company.trim()
       });
       
-      setSuccess('✅ Cập nhật thông tin thành công!');
+      setSuccess('Cập nhật thông tin thành công!');
       setIsEditing(false);
       
       setTimeout(() => {
         setSuccess('');
       }, 3000);
     } catch (error: any) {
-      console.error('❌ Update profile error:', error);
-      setError('❌ Lỗi khi cập nhật thông tin: ' + (error.message || 'Vui lòng thử lại'));
+      // Ghi log lỗi khi cập nhật thông tin
+      console.error('Update profile error:', error);
+      setError('Lỗi khi cập nhật thông tin: ' + (error.message || 'Vui lòng thử lại'));
     } finally {
       setSaving(false);
     }
   };
 
+  // Xử lý hủy chỉnh sửa
   const handleCancelEdit = () => {
     setFormData({
       displayName: currentUser?.displayName || '',
@@ -185,6 +209,7 @@ export default function ProfilePage() {
     setSuccess('');
   };
 
+  // Định dạng ngày tháng
   const formatDate = (date: any) => {
     if (!date) return 'Không xác định';
     
@@ -209,11 +234,13 @@ export default function ProfilePage() {
         minute: '2-digit'
       });
     } catch (error) {
+      // Ghi log lỗi định dạng ngày
       console.error('Format date error:', error);
       return 'Không xác định';
     }
   };
 
+  // Hiển thị màn hình đang tải
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -223,16 +250,20 @@ export default function ProfilePage() {
     );
   }
 
+  // Trả về null nếu không có người dùng
   if (!currentUser) {
     return null;
   }
 
+  // Giao diện người dùng của trang Hồ sơ
   return (
     <ProtectedRoute>
       <div className={styles.pageContainer}>
+        {/* Thanh tiêu đề */}
         <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         
         <div className={styles.mainContent}>
+          {/* Thanh bên */}
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           
           <main className={styles.content}>
@@ -244,7 +275,7 @@ export default function ProfilePage() {
                 </p>
               </div>
 
-              {/* Alert Messages */}
+              {/* Thông báo lỗi */}
               {error && (
                 <div className={styles.alertError}>
                   <ExclamationTriangleIcon className={styles.alertIcon} />
@@ -258,6 +289,7 @@ export default function ProfilePage() {
                 </div>
               )}
 
+              {/* Thông báo thành công */}
               {success && (
                 <div className={styles.alertSuccess}>
                   <CheckIcon className={styles.alertIcon} />
@@ -272,6 +304,7 @@ export default function ProfilePage() {
               )}
 
               <div className={styles.profileCard}>
+                {/* Khu vực ảnh đại diện */}
                 <div className={styles.avatarSection}>
                   <div 
                     className={`${styles.avatarContainer} ${uploading ? styles.uploading : ''}`}
@@ -285,6 +318,7 @@ export default function ProfilePage() {
                         style={{ opacity: uploading ? 0.7 : 1 }}
                         key={currentUser.photoURL}
                         onError={(e) => {
+                          // Ghi log lỗi khi tải ảnh đại diện
                           console.error('Avatar load error:', e);
                           e.currentTarget.style.display = 'none';
                         }}
@@ -322,12 +356,12 @@ export default function ProfilePage() {
                       {currentUser.displayName || 'Người dùng'}
                     </h2>
                     <p className={styles.userRole}>
-                      {currentUser.role === 'admin' ? '👑 Quản trị viên' : '👤 Người dùng'}
+                      {currentUser.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
                     </p>
                   </div>
                 </div>
               
-                {/* User Information */}
+                {/* Khu vực thông tin người dùng */}
                 <div className={styles.userInfoSection}>
                   <div className={styles.sectionHeader}>
                     <h3 className={styles.sectionTitle}>Thông tin cơ bản</h3>
@@ -343,7 +377,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className={styles.infoFields}>
-                    {/* Display Name */}
+                    {/* Tên hiển thị */}
                     <div className={styles.fieldGroup}>
                       <label className={styles.fieldLabel}>Tên hiển thị</label>
                       {isEditing ? (
@@ -362,7 +396,7 @@ export default function ProfilePage() {
                       )}
                     </div>
 
-                    {/* Company */}
+                    {/* Công ty */}
                     <div className={styles.fieldGroup}>
                       <label className={styles.fieldLabel}>Công ty</label>
                       {isEditing ? (
@@ -381,20 +415,20 @@ export default function ProfilePage() {
                       )}
                     </div>
 
-                    {/* Email (readonly) */}
+                    {/* Email (chỉ đọc) */}
                     <div className={styles.fieldGroup}>
                       <label className={styles.fieldLabel}>Email</label>
                       <div className={styles.fieldValue}>
                         {currentUser.email}
                         {currentUser.emailVerified ? (
-                          <span className={styles.verifiedBadge}>✅ Đã xác thực</span>
+                          <span className={styles.verifiedBadge}>Đã xác thực</span>
                         ) : (
-                          <span className={styles.unverifiedBadge}>⚠️ Chưa xác thực</span>
+                          <span className={styles.unverifiedBadge}>Chưa xác thực</span>
                         )}
                       </div>
                     </div>
 
-                    {/* Action buttons for editing */}
+                    {/* Các nút hành động khi chỉnh sửa */}
                     {isEditing && (
                       <div className={styles.actionButtons}>
                         <button
@@ -419,7 +453,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Account Statistics */}
+                {/* Thống kê tài khoản */}
                 <div className={styles.statsSection}>
                   <h3 className={styles.sectionTitle}>Thống kê tài khoản</h3>
                   <div className={styles.statsGrid}>

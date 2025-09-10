@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các hook từ React và các thành phần, biểu tượng cần thiết
 import { useState } from 'react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Header from '@/components/layout/Header';
@@ -12,12 +13,14 @@ import {
 } from '@heroicons/react/24/outline';
 import styles from './documents.module.css';
 
+// Định nghĩa giao diện cho danh mục pháp luật
 interface LegalCategory {
   id: string;
   name: string;
   count: number;
 }
 
+// Định nghĩa giao diện cho tài liệu pháp luật
 interface LegalDocument {
   id: string;
   title: string;
@@ -27,11 +30,16 @@ interface LegalDocument {
   status: 'active' | 'draft';
 }
 
+// Thành phần chính của trang Văn bản
 export default function DocumentsPage() {
+  // Quản lý trạng thái mở/đóng của thanh bên
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Quản lý giá trị tìm kiếm
   const [searchQuery, setSearchQuery] = useState('');
+  // Quản lý danh mục được chọn
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  // Danh sách các danh mục pháp luật
   const categories: LegalCategory[] = [
     { id: 'all', name: 'Xem tất cả', count: 355703 },
     { id: 'administrative', name: 'Bộ máy hành chính', count: 130529 },
@@ -49,6 +57,7 @@ export default function DocumentsPage() {
     { id: 'technology', name: 'Công nghệ thông tin', count: 14708 }
   ];
 
+  // Danh sách tài liệu pháp luật mẫu
   const mockDocuments: LegalDocument[] = [
     {
       id: '1',
@@ -76,23 +85,28 @@ export default function DocumentsPage() {
     }
   ];
 
+  // Xử lý tìm kiếm
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement search logic
-    console.log('Searching for:', searchQuery);
+    // Triển khai logic tìm kiếm
+    console.log('Đang tìm kiếm:', searchQuery);
   };
 
+  // Giao diện người dùng của trang Văn bản
   return (
     <ProtectedRoute>
       <div className={styles.documentsContainer}>
+        {/* Thanh tiêu đề */}
         <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         
         <div className={styles.documentsLayout}>
+          {/* Thanh bên */}
           <Sidebar 
             isOpen={sidebarOpen} 
             onClose={() => setSidebarOpen(false)} 
           />
           
+          {/* Nội dung chính */}
           <main className={styles.mainContent}>
             <div className={styles.contentHeader}>
               <h1 className={styles.pageTitle}>Văn bản Pháp luật</h1>
@@ -101,7 +115,7 @@ export default function DocumentsPage() {
               </p>
             </div>
 
-            {/* Search and filters */}
+            {/* Khu vực tìm kiếm và bộ lọc */}
             <div className={styles.searchSection}>
               <form className={styles.searchForm} onSubmit={handleSearch}>
                 <div className={styles.searchInputGroup}>
@@ -132,7 +146,7 @@ export default function DocumentsPage() {
             </div>
 
             <div className={styles.contentGrid}>
-              {/* Categories sidebar */}
+              {/* Khu vực danh mục */}
               <div className={styles.categoriesSection}>
                 <h3 className={styles.categoriesTitle}>Lĩnh vực</h3>
                 <div className={styles.categoriesList}>
@@ -153,7 +167,7 @@ export default function DocumentsPage() {
                 </div>
               </div>
 
-              {/* Documents list */}
+              {/* Danh sách tài liệu */}
               <div className={styles.documentsSection}>
                 <div className={styles.resultsHeader}>
                   <h3>Kết quả tìm kiếm</h3>

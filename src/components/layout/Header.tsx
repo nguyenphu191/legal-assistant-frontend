@@ -1,5 +1,6 @@
 'use client';
 
+// Nhập các hook từ React, điều hướng, và các thành phần cần thiết
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,30 +14,37 @@ import {
 } from '@heroicons/react/24/outline';
 import styles from './Header.module.css';
 
+// Định nghĩa giao diện cho props của thành phần Header
 interface HeaderProps {
   onMenuToggle?: () => void;
 }
 
+// Thành phần Header của ứng dụng
 export default function Header({ onMenuToggle }: HeaderProps) {
+  // Lấy thông tin người dùng và hàm đăng xuất từ AuthContext
   const { currentUser, logout } = useAuth();
   const router = useRouter();
+  // Quản lý trạng thái hiển thị menu người dùng
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  // Tham chiếu đến menu để xử lý sự kiện click bên ngoài
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Xử lý đăng xuất
   const handleLogout = async () => {
     try {
       await logout();
       router.push('/auth');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Lỗi đăng xuất:', error);
     }
   };
 
+  // Xử lý chuyển hướng đến trang đăng nhập
   const handleLogin = () => {
     router.push('/auth');
   };
 
-  // Close menu when clicking outside
+  // Đóng menu khi nhấp chuột bên ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -50,9 +58,10 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     };
   }, []);
 
+  // Giao diện người dùng của Header
   return (
     <header className={styles.header}>
-      {/* Left side - Logo and menu button */}
+      {/* Phần bên trái - Logo và nút menu */}
       <div className={styles.leftSection}>
         {onMenuToggle && (
           <button 
@@ -71,7 +80,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         </Link>
       </div>
 
-      {/* Right side - User info */}
+      {/* Phần bên phải - Thông tin người dùng */}
       <div className={styles.rightSection}>
         {currentUser ? (
           <div className={styles.userMenu} ref={menuRef}>
@@ -101,7 +110,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               <ChevronDownIcon className={styles.chevronIcon} />
             </button>
 
-            {/* User Dropdown Menu */}
+            {/* Menu thả xuống của người dùng */}
             {userMenuOpen && (
               <div className={styles.userDropdown}>
                 <div className={styles.userDropdownHeader}>
